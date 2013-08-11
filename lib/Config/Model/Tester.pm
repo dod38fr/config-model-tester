@@ -322,7 +322,7 @@ sub run_tests {
         Log::Log4perl->easy_init( $log ? $WARN : $ERROR );
     }
 
-    eval { $model = Config::Meodel->new(); } ;
+    eval { $model = Config::Model->new(); } ;
     if ($@) {
         plan skip_all => 'Config::Model is not loaded' ;
         return;
