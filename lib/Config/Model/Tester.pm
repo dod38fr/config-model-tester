@@ -101,7 +101,7 @@ sub list_test_files {
         },
         $debian_dir->stringify
     );
-    map { s!^$debian_dir!/!; } @file_list;
+    map { s!^$debian_dir!!; } @file_list;
     return sort @file_list;
 }
 
