@@ -43,7 +43,7 @@ sub setup_test {
 
     # cleanup before tests
     $wr_root->rmtree();
-    $wr_root->mkpath( 0, { mode => 0755 } );
+    $wr_root->mkpath( { mode => 0755 } );
 
     my $wr_dir    = $wr_root->subdir('test-' . $t_name);
     my $conf_file ;
@@ -62,7 +62,7 @@ sub setup_test {
                 die "$model_test $t_name setup error: cannot find destination for test file $file" ;
             }
             my $destination = $wr_dir->file($destination_str) ;
-            $destination->parent->mkpath(0 , { mode => 0755 }) ;
+            $destination->parent->mkpath( { mode => 0755 }) ;
             my $data = $ex_data->file($file)->slurp() ;
             $destination->spew( $data );
             @file_list = list_test_files ($wr_dir);
@@ -71,7 +71,7 @@ sub setup_test {
     elsif ( $ex_data->is_dir ) {
         # copy whole dir
         my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
-        $debian_dir->mkpath(0, { mode => 0755 });
+        $debian_dir->mkpath( { mode => 0755 });
         dircopy( $ex_data->stringify, $debian_dir->stringify )
           || die "dircopy $ex_data -> $debian_dir failed:$!";
         @file_list = list_test_files ($debian_dir);
@@ -146,7 +146,7 @@ sub run_model_test {
             = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
             
         if ($t->{config_file}) {
-            $wr_dir->file($t->{config_file})->parent->mkpath(0,{mode => 0755} ) ;
+            $wr_dir->file($t->{config_file})->parent->mkpath({mode => 0755} ) ;
         }
 
         my $inst = $model->instance(
