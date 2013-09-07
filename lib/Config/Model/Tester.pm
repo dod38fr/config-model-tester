@@ -245,21 +245,36 @@ sub run_model_test {
         $inst->write_back( force => 1 );
         ok( 1, "$model_test write back done" );
         
-        if (my $fc = $t->{file_content}) {
+        if (my $fc = $t->{file_contents} || $t->{file_content}) {
             foreach my $f (keys %$fc) {
-                file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $fc->{$f},  "check content of $f";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
+                        "check that $f contains $_";
+                }
             } 
         }
 
         if (my $fc = $t->{file_contents_like}) {
             foreach my $f (keys %$fc) {
-                file_contents_like $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f matches regexp";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_like $wr_dir->file($f)->stringify,  $_,
+                        "check that $f matches regexp $_";
+                }
             } 
         }
 
         if (my $fc = $t->{file_contents_unlike}) {
             foreach my $f (keys %$fc) {
-                file_contents_unlike $wr_dir->file($f)->stringify,  $fc->{$f},  "check that $f does not match regexp";
+                my $t = $fc->{$f} ;
+                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+                foreach (@tests) {
+                    file_contents_unlike $wr_dir->file($f)->stringify,  $_,
+                        "check that $f does not match regexp $_";
+                }
             } 
         }
 
@@ -625,14 +640,16 @@ You can skip warning when writing back with:
 
 =item *
 
-Check the content of the written files(s) with L<Test::File::Contents>:
+Check the content of the written files(s) with L<Test::File::Contents>. Tests can be grouped
+in an array ref:
 
-   file_content => { 
+   file_contents => {
             "/home/foo/my_arm.conf" => "really big string" ,
+            "/home/bar/my_arm.conf" => [ "really big string" , "another"], ,
         }
    
    file_contents_like => {
-            "/home/foo/my_arm.conf" => qr/should be there/ ,
+            "/home/foo/my_arm.conf" => [ qr/should be there/, qr/as well/ ] ,
    }
 
    file_contents_unlike => {
