@@ -46,6 +46,7 @@ sub setup_test {
     $wr_root->mkpath( { mode => 0755 } );
 
     my $wr_dir    = $wr_root->subdir('test-' . $t_name);
+    my $wr_dir2   = $wr_root->subdir('test-' . $t_name.'-w');
     my $conf_file ;
     $conf_file = $wr_dir->file($conf_dir,$conf_file_name) if defined $conf_file_name;
 
@@ -84,7 +85,7 @@ sub setup_test {
     }
     ok( 1, "Copied $model_test example $t_name" );
 
-    return ( $wr_dir, $conf_file, $ex_data, @file_list );
+    return ( $wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list );
 }
 
 #
@@ -145,7 +146,7 @@ sub run_model_test {
         } 
         note("Beginning subtest $model_test $t_name");
 
-        my ($wr_dir, $conf_file, $ex_data, @file_list) 
+        my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list) 
             = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
             
         if ($t->{config_file}) {
@@ -294,13 +295,12 @@ sub run_model_test {
         }
 
         # create another instance to read the conf file that was just written
-        my $wr_dir2 = $wr_dir->stringify .'-w' ;
-        dircopy( $wr_dir, $wr_dir2 )
+        dircopy( $wr_dir->stringify, $wr_dir2->stringify )
           or die "can't copy from $wr_dir to $wr_dir2: $!";
 
         my $i2_test = $model->instance(
             root_class_name => $model_to_test,
-            root_dir        => $wr_dir2,
+            root_dir        => $wr_dir2->stringify,
             config_file     => $t->{config_file} ,
             instance_name   => "$model_test-$t_name-w",
         );
