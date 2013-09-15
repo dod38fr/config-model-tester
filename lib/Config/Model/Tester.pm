@@ -94,14 +94,17 @@ sub list_test_files {
     my $debian_dir = shift;
     my @file_list ;
 
-    find(
-        {
-            wanted => sub { push @file_list, $_ unless -d; },
-            no_chdir => 1
-        },
-        $debian_dir->stringify
-    );
-    map { s!^$debian_dir!!; } @file_list;
+	my $chop = scalar $debian_dir->dir_list();
+	my $scan = sub {
+		my ($child) = @_;
+		return if $child->is_dir ;
+		my @l = $child->components();
+		splice @l,0,$chop;
+		push @file_list, '/'.join('/',@l) ; # build a unix-like path even on windows
+	};
+
+	$debian_dir->recurse(callback => $scan);
+
     return sort @file_list;
 }
 
