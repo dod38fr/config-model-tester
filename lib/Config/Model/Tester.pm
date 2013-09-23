@@ -6,13 +6,13 @@ use locale;
 use utf8;
 
 use Test::More;
-use Log::Log4perl qw(:easy :levels);
+use Log::Log4perl 1.11 qw(:easy :levels);
 use File::Path;
 use File::Copy;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
 use File::Find;
 
-use Path::Class ;
+use Path::Class 0.29;
 
 use File::Spec ;
 use Test::Warn;
