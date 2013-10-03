@@ -390,7 +390,7 @@ Config::Model::Tester - Test framework for Config::Model
 
 =head1 SYNOPSIS
 
- # in t/foo.t
+ # in t/model_test.t
  use warnings;
  use strict;
 
@@ -414,56 +414,69 @@ A specific layout for test files must be followed
 
 =head2 Simple test file layout
 
- t/model_tests.d
- |-- fstab-examples
- |   |-- t0
- |   \-- t1
- \-- fstab-test-conf.pl
+ t
+ |-- model_test.t
+ \-- model_tests.d
+     |-- lcdd-test-conf.pl   # test specification
+     \-- lcdd-examples
+         |-- t0              # test case t0
+         \-- LCDD-0.5.5      # test case for older LCDproc
 
-In the example above, we have 1 model to test: C<fstab>.
+In the example above, we have 1 model to test: C<lcdd> and 2 tests
+cases.
 
-Test specification is written in C<fatab-test-conf.pl> file. Test cases are 
-plain files in C<fstab-examples>. C<fstab-test-conf.pl> will contain instruction so
-that each file will be used as a C</etc/fstab> test case. 
+Test specification is written in C<lcdd-test-conf.pl> file. Test
+cases are plain files in C<lcdd-examples>. C<lcdd-test-conf.pl> will
+contain instructions so that each file will be used as a
+C</etc/LCDd.conf> file during each test case.
 
-C<fatab-test-conf.pl> can contain specifications for more test case. Each test case will 
-require a new file in C<fstab-examples> directory.
+C<lcdd-test-conf.pl> can contain specifications for more test
+case. Each test case will require a new file in C<lcdd-examples>
+directory.
+
+See L</Examples> for a link to the actual LCDproc model tests
 
 =head2 Test file layout for multi-file configuration
 
- t/model_tests.d
- |-- dpkg-examples
- |   \-- libversion
- |       \-- debian
- |           |-- changelog
- |           |-- compat
- |           |-- control
- |           |-- copyright
- |           |-- rules
- |           |-- source
- |           |   \-- format
- |           \-- watch
- \-- dpkg-test-conf.pl
+When a configuration is spread over several files, test examples must be
+provided in sub-directories:
 
-In the example above, the test specification is written in C<dpkg-test-
-conf.pl>. Dpkg layout requires several files per test case. C<dpkg-test-
-conf.pl> will contain instruction so that each directory under C<dpkg-
-examples> will be used.
+ t/model_tests.d
+ \-- dpkg-test-conf.pl         # test specification
+ \-- dpkg-examples
+     \-- libversion            # example subdir
+         \-- debian            # directory for one test case
+             |-- changelog
+             |-- compat
+             |-- control
+             |-- copyright
+             |-- rules
+             |-- source
+             |   \-- format
+             \-- watch
+
+In the example above, the test specification is written in
+C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
+C<dpkg-test-conf.pl> will contain instruction so that each directory
+under C<dpkg-examples> will be used.
+
+See L</Examples> for a link to the (many) Dpkg model tests
 
 =head2 Test file layout depending on system
 
  t/model_tests.d/
+ |-- ssh-test-conf.pl
  |-- ssh-examples
- \-- basic
- |   |-- system_ssh_config
- |   \-- user_ssh_config
- \-- ssh-test-conf.pl
+     \-- basic
+         |-- system_ssh_config
+         \-- user_ssh_config
 
 In this example, the layout of the configuration files depend on the
-system. For instance, system ssh_config is stored in C</etc/ssh> on
+system. For instance, system wide C<ssh_config> is stored in C</etc/ssh> on
 Linux, and directly in C</etc> on MacOS.
 
-C<ssh-test-conf.pl> will specify the target path of each file. I.e.:
+L<ssh-test-conf.pl|https://github.com/dod38fr/config-model-openssh/blob/master/t/model_tests.d/ssh-test-conf.pl>
+will specify the target path of each file. I.e.:
 
  $home_for_test = $^O eq 'darwin' ? '/Users/joe'
                 :                   '/home/joe' ;
@@ -476,6 +489,8 @@ C<ssh-test-conf.pl> will specify the target path of each file. I.e.:
             'default' => '/etc/ssh/ssh_config',
         },
         'user_ssh_config' => "$home_for_test/.ssh/config"
+
+See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-model-openssh/tree/master/t/model_tests.d>
 
 =head2 Basic test specification
 
@@ -698,7 +713,7 @@ configuration data was written and retrieved correctly:
         'fs:/home fs_file',          "/home",
     },
 
-Like the C<check> item explained above, you can run check using
+Like the C<check> item explained above, you can run C<wr_check> using
 different check modes.
 
 =back
@@ -707,7 +722,7 @@ different check modes.
 
 Run all tests:
 
- perl -Ilib t/model_test.t
+ prove -l t/model_test.t
  
 By default, all tests are run on all models. 
 
@@ -721,27 +736,58 @@ a bunch of letters. 't' to get test traces. 'e' to get stack trace in case of
 errors, 'l' to have logs. All other letters are ignored. E.g.
 
   # run with log and error traces
-  perl -Ilib t/model_test.t el
+  prove -lv t/model_test.t :: el
 
 =item *
 
 The model name to tests. E.g.:
 
   # run only fstab tests
-  perl -Ilib t/model_test.t x fstab
+  prove -lv t/model_test.t :: x fstab
 
 =item * 
 
 The required subtest E.g.:
 
   # run only fstab tests t0
-  perl -Ilib t/model_test.t x fstab t0
+  prove -lv t/model_test.t :: x fstab t0
   
 =back
 
 =head1 Examples
 
-See http://config-model.hg.sourceforge.net/hgweb/config-model/config-model/file/tip/config-model-core/t/model_tests.d/debian-dpkg-copyright-test-conf.pl
+=over
+
+=item *
+
+L<LCDproc|http://lcdproc.org> has a single configuration file:
+C</etc/LCDd.conf>. Here's LCDproc test
+L<layout|https://github.com/dod38fr/config-model-lcdproc/tree/master/t/model_tests.d>
+and the L<test specification|https://github.com/dod38fr/config-model-lcdproc/blob/master/t/model_tests.d/lcdd-test-conf.pl>
+
+=item *
+
+Dpkg packages are constructed from several files. These files are handled like
+configuration files by L<Config::Model::Dpkg>. The
+L<test layout|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=tree;f=t/model_tests.d;hb=HEAD>
+features test with multiple file in
+L<dpkg-examples|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=tree;f=t/model_tests.d/dpkg-examples;hb=HEAD>.
+The test is specified in L<dpkg-test-conf.pl|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=blob_plain;f=t/model_tests.d/dpkg-test-conf.pl;hb=HEAD>
+
+=item *
+
+L<multistrap-test-conf.pl|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>
+amd L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
+specify a test where the configuration file name is not imposed by the
+application. The file name must then be set in the test specification.
+
+=item *
+
+L<backend-shellvar-test-conf.pl|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-shellvar-test-conf.pl>
+is a more complex example showing how to test a backend. The test is done creating a dummy model within the test specification.
+
+=back
+
 
 =head1 AUTHOR
 
