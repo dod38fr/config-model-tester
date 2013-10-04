@@ -144,12 +144,12 @@ sub run_model_test {
         if ( defined $do and $do ne $t_name ) {
             $idx++;
             next;
-        } 
+        }
         note("Beginning subtest $model_test $t_name");
 
-        my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list) 
+        my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
             = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
-            
+
         if ($t->{config_file}) {
             $wr_dir->file($t->{config_file})->parent->mkpath({mode => 0755} ) ;
         }
@@ -242,14 +242,14 @@ sub run_model_test {
         if (my $annot_check = $t->{verify_annotation}) {
             foreach my $path (keys %$annot_check) {
                 my $note = $annot_check->{$path};
-                is( $root->grab($path)->annotation, 
+                is( $root->grab($path)->annotation,
                     $note, "check $path annotation" );
-            } 
+            }
         }
 
         $inst->write_back( force => 1 );
         ok( 1, "$model_test write back done" );
-        
+
         if (my $fc = $t->{file_contents} || $t->{file_content}) {
             foreach my $f (keys %$fc) {
                 my $t = $fc->{$f} ;
@@ -258,7 +258,7 @@ sub run_model_test {
                     file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
                         "check that $f contains $_";
                 }
-            } 
+            }
         }
 
         if (my $fc = $t->{file_contents_like}) {
@@ -269,7 +269,7 @@ sub run_model_test {
                     file_contents_like $wr_dir->file($f)->stringify,  $_,
                         "check that $f matches regexp $_";
                 }
-            } 
+            }
         }
 
         if (my $fc = $t->{file_contents_unlike}) {
@@ -280,7 +280,7 @@ sub run_model_test {
                     file_contents_unlike $wr_dir->file($f)->stringify,  $_,
                         "check that $f does not match regexp $_";
                 }
-            } 
+            }
         }
 
         my @new_file_list;
@@ -318,7 +318,7 @@ sub run_model_test {
             "compare original $model_test custom data with 2nd instance custom data"
         );
 
-        ok( -s "$wr_dir2/$conf_dir/$conf_file_name" , 
+        ok( -s "$wr_dir2/$conf_dir/$conf_file_name" ,
             "check that original $model_test file was not clobbered" )
                 if defined $conf_file_name ;
 
@@ -374,11 +374,11 @@ sub run_tests {
 
     foreach my $model_test_conf (@group_of_tests) {
         my ($model_test) = ( $model_test_conf =~ m!\.d/([\w\-]+)-test-conf! );
-        next if ( $test_only_model and $test_only_model ne $model_test ) ; 
+        next if ( $test_only_model and $test_only_model ne $model_test ) ;
         run_model_test($model_test, $model_test_conf, $do, $model, $trace, $wr_root) ;
     }
 
-    memory_cycle_ok($model,"test memory cycle") ; 
+    memory_cycle_ok($model,"test memory cycle") ;
 
     done_testing;
 
@@ -403,8 +403,8 @@ sub run_tests {
 
 =head1 DESCRIPTION
 
-This class provides a way to test configuration models with tests files. 
-This class was designed to tests several models and several tests 
+This class provides a way to test configuration models with tests files.
+This class was designed to tests several models and several tests
 cases per model.
 
 A specific layout for test files must be followed
@@ -509,19 +509,19 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
 
  # list of tests
  @tests = (
-    { 
-     # test name 
+    {
+     # test name
      name => 't0',
      # add optional specification here for t0 test
     },
-    { 
+    {
      name => 't1',
      # add optional specification here for t1 test
      },
  );
 
  1; # to keep Perl happy
- 
+
 =head2 Internal tests
 
 C<$model> can also be called to create models to test specific C<Config::Model> behaviors.
@@ -529,7 +529,7 @@ Use with caution.
 
 =head2 Test specification with arbitrary file names
 
-In some models (e.g. C<Multistrap>, the config file is chosen by the user. 
+In some models (e.g. C<Multistrap>, the config file is chosen by the user.
 In this case, the file name must be specified for each tests case:
 
  $model_to_test = "Multistrap";
@@ -571,15 +571,15 @@ C<< load_check => 'no' >> if your file is not valid.
 =item *
 
 Check for config data warning. You should pass the list of expected warnings.
-E.g.  
+E.g.
 
     load_warnings => [ qr/Missing/, (qr/deprecated/) x 3 , ],
-    
+
 Use an empty array_ref to masks load warnings.
 
 =item *
 
-Optionally load configuration data. You should design this config data to 
+Optionally load configuration data. You should design this config data to
 suppress any error or warning mentioned above. E.g:
 
     load => 'binary:seaview Synopsis="multiplatform interface for sequence alignment"',
@@ -592,10 +592,10 @@ Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 
 =item *
 
-Call L<dump_tree|Config::Model::Node/dump_tree ( ... )> to check the validity of the 
+Call L<dump_tree|Config::Model::Node/dump_tree ( ... )> to check the validity of the
 data. Use C<dump_errors> if you expect issues:
 
-    dump_errors =>  [ 
+    dump_errors =>  [
         # the issues     the fix that will be applied
         qr/mandatory/ => 'Files:"*" Copyright:0="(c) foobar"',
         qr/mandatory/ => ' License:FOO text="foo bar" ! Files:"*" License short_name="FOO" '
@@ -611,9 +611,9 @@ You can tolerate any dump warning this way:
 
         dump_warnings => undef ,
 
-=item * 
+=item *
 
-Run specific content check to verify that configuration data was retrieved 
+Run specific content check to verify that configuration data was retrieved
 correctly:
 
     check => [
@@ -621,16 +621,16 @@ correctly:
         'fs:/proc fs_file',           "/proc" ,
         'fs:/home fs_file',          "/home",
     ],
-    
+
 You can run check using different check modes (See L<Config::Model::Value/"fetch( ... )">)
 by passing a hash ref instead of a scalar :
-    
+
     check  => [
         'sections:debian packages:0' , { qw/mode layered value dpkg-dev/},
         ''sections:base packages:0',   { qw/mode layered value gcc-4.2-base/},
     ],
 
-The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)"> 
+The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
 and L<fetch|Config::Model::Value/"fetch( ... )">
 
 =item *
@@ -645,7 +645,7 @@ Verify annotation extracted from the configuration file comments:
 
 =item *
 
-Write back the config data in C<< wr_root/<subtest name>/ >>. 
+Write back the config data in C<< wr_root/<subtest name>/ >>.
 Note that write back is forced, so the tested configuration files are
 written back even if the configuration values were not changed during the test.
 
@@ -662,7 +662,7 @@ in an array ref:
             "/home/foo/my_arm.conf" => "really big string" ,
             "/home/bar/my_arm.conf" => [ "really big string" , "another"], ,
         }
-   
+
    file_contents_like => {
             "/home/foo/my_arm.conf" => [ qr/should be there/, qr/as well/ ] ,
    }
@@ -673,11 +673,11 @@ in an array ref:
 
 =item *
 
-Check added or removed configuration files. If you expect changes, 
+Check added or removed configuration files. If you expect changes,
 specify a subref to alter the file list:
 
-    file_check_sub => sub { 
-        my $list_ref = shift ; 
+    file_check_sub => sub {
+        my $list_ref = shift ;
         # file added during tests
         push @$list_ref, "/debian/source/format" ;
     };
@@ -704,7 +704,7 @@ Run specific content check on the B<written> config file to verify that
 configuration data was written and retrieved correctly:
 
 
-    wr_check => { 
+    wr_check => {
         'fs:/proc fs_spec',           "proc" ,
         'fs:/proc fs_file',           "/proc" ,
         'fs:/home fs_file',          "/home",
@@ -720,16 +720,16 @@ different check modes.
 Run all tests:
 
  prove -l t/model_test.t
- 
-By default, all tests are run on all models. 
+
+By default, all tests are run on all models.
 
 You can pass arguments to C<t/model_test.t>:
 
-=over 
+=over
 
 =item *
 
-a bunch of letters. 't' to get test traces. 'e' to get stack trace in case of 
+a bunch of letters. 't' to get test traces. 'e' to get stack trace in case of
 errors, 'l' to have logs. All other letters are ignored. E.g.
 
   # run with log and error traces
@@ -742,13 +742,13 @@ The model name to tests. E.g.:
   # run only fstab tests
   prove -lv t/model_test.t :: x fstab
 
-=item * 
+=item *
 
 The required subtest E.g.:
 
   # run only fstab tests t0
   prove -lv t/model_test.t :: x fstab t0
-  
+
 =back
 
 =head1 Examples
