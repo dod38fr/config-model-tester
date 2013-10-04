@@ -1,4 +1,5 @@
 package Config::Model::Tester;
+# ABSTRACT: Test framework for Config::Model
 
 use warnings;
 use strict;
@@ -383,10 +384,6 @@ sub run_tests {
 
 }
 1;
-
-=head1 NAME
-
-Config::Model::Tester - Test framework for Config::Model
 
 =head1 SYNOPSIS
 
@@ -789,11 +786,8 @@ is a more complex example showing how to test a backend. The test is done creati
 =back
 
 
-=head1 AUTHOR
-
-Dominique Dumont, (ddumont at cpan dot org)
-
 =head1 SEE ALSO
 
-L<Config::Model>, 
+=for :list
+* L<Config::Model>
 
