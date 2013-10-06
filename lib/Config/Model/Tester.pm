@@ -522,6 +522,8 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
 
  1; # to keep Perl happy
 
+See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
+
 =head2 Internal tests
 
 Some tests will require the creation of a configuration class dedicated
@@ -548,7 +550,9 @@ In this case, the file name must be specified for each tests case:
  );
 
 
-=head2 test scenario
+See actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
+
+=head2 Test scenario
 
 Each subtest follow a sequence explained below. Each step of this
 sequence may be altered by adding specification in the test case:
