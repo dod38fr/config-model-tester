@@ -524,8 +524,13 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
 
 =head2 Internal tests
 
-C<$model> can also be called to create models to test specific C<Config::Model> behaviors.
-Use with caution.
+Some tests will require the creation of a configuration class dedicated
+for test. This test class can be created directly in the test specification
+by calling L<create_config_class|Config::Model/create_config_class> on
+C<$model> variable. See for instance the
+L<layer test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/layer-test-conf.pl>
+or the
+L<test for shellvar backend|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-shellvar-test-conf.pl>.
 
 =head2 Test specification with arbitrary file names
 
@@ -790,4 +795,6 @@ is a more complex example showing how to test a backend. The test is done creati
 
 =for :list
 * L<Config::Model>
+* L<Test::More>
+
 
