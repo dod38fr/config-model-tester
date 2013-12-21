@@ -636,7 +636,7 @@ by passing a hash ref instead of a scalar :
 
     check  => [
         'sections:debian packages:0' , { qw/mode layered value dpkg-dev/},
-        ''sections:base packages:0',   { qw/mode layered value gcc-4.2-base/},
+        'sections:base packages:0',    { qw/mode layered value gcc-4.2-base/},
     ],
 
 The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
