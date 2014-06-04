@@ -783,7 +783,7 @@ The test is specified in L<dpkg-test-conf.pl|http://anonscm.debian.org/gitweb/?p
 =item *
 
 L<multistrap-test-conf.pl|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>
-amd L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
+and L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
 specify a test where the configuration file name is not imposed by the
 application. The file name must then be set in the test specification.
 
