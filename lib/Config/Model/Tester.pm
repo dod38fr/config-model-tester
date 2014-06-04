@@ -304,6 +304,7 @@ sub run_model_test {
             root_dir        => $wr_dir2->stringify,
             config_file     => $t->{config_file} ,
             instance_name   => "$model_test-$t_name-w",
+            check           => $t->{load_check2} || 'yes',
         );
 
         ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
@@ -702,6 +703,11 @@ the original configuration.
 
 Create another configuration instance to read the conf file that was just copied
 (configuration data is checked.)
+
+=item *
+
+You can skip the load check if the written file still contain errors (e.g.
+some errors were ignored and cannot be fixed) with C<< load_check2 => 'no' >>
 
 =item *
 
