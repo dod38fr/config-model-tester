@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use locale;
 use utf8;
+use 5.10.1;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
@@ -40,7 +41,7 @@ require Exporter;
 $File::Copy::Recursive::DirPerms = 0755;
 
 sub setup_test {
-    my ( $model_test, $t_name, $wr_root, $setup ) = @_;
+    my ( $model_test, $t_name, $wr_root, $trace, $setup ) = @_;
 
     # cleanup before tests
     $wr_root->rmtree();
@@ -74,13 +75,16 @@ sub setup_test {
         # copy whole dir
         my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
         $debian_dir->mkpath( { mode => 0755 });
+        say "dircopy ". $ex_data->stringify . '->'. $debian_dir->stringify
+            if $trace ;
         dircopy( $ex_data->stringify, $debian_dir->stringify )
           || die "dircopy $ex_data -> $debian_dir failed:$!";
         @file_list = list_test_files ($debian_dir);
     }
     else {
-
         # just copy file
+        say "file copy ". $ex_data->stringify . '->'. $conf_file->stringify
+            if $trace ;
         fcopy( $ex_data->stringify, $conf_file->stringify )
           || die "copy $ex_data -> $conf_file failed:$!";
     }
@@ -148,10 +152,12 @@ sub run_model_test {
         note("Beginning subtest $model_test $t_name");
 
         my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
-            = setup_test ($model_test, $t_name, $wr_root,$t->{setup});
+            = setup_test ($model_test, $t_name, $wr_root,$trace, $t->{setup});
 
         if ($t->{config_file}) {
-            $wr_dir->file($t->{config_file})->parent->mkpath({mode => 0755} ) ;
+            my $file = $conf_dir ? "$conf_dir/" : '';
+            $file .= $t->{config_file} ;
+            $wr_dir->file($file)->parent->mkpath({mode => 0755} ) ;
         }
 
         my $inst = $model->instance(
