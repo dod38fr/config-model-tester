@@ -124,6 +124,20 @@ sub write_config_file {
     }
 }
 
+sub check_load_warnings {
+    my ($root,$t) = @_ ;
+
+    if ( exists $t->{load_warnings} and not defined $t->{load_warnings} ) {
+        local $Config::Model::Value::nowarning = 1;
+        $root->init;
+        ok( 1,"Read configuration and created instance with init() method without warning check" );
+    }
+    else {
+        warnings_like { $root->init; } $t->{load_warnings},
+            "Read configuration and created instance with init() method with warning check ";
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -176,18 +190,7 @@ sub run_model_test {
 
         my $root = $inst->config_root;
 
-        if ( exists $t->{load_warnings}
-            and not defined $t->{load_warnings} )
-        {
-            local $Config::Model::Value::nowarning = 1;
-            $root->init;
-            ok( 1,"Read configuration and created instance with init() method without warning check" );
-        }
-        else {
-            warnings_like { $root->init; } $t->{load_warnings},
-                "Read configuration and created instance with init() method with warning check ";
-        }
-
+        check_load_warnings ($root,$t);
         if ( $t->{load} ) {
             print "Loading $t->{load}\n" if $trace ;
             $root->load( $t->{load} );
