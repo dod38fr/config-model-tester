@@ -153,6 +153,41 @@ sub apply_fix {
     ok( 1, "apply_fixes called" );
 }
 
+sub dump_tree_full_mode {
+    my ($model_test, $root, $t, $trace) = @_;
+
+    print "dumping tree ...\n" if $trace;
+    my $dump  = '';
+    my $risky = sub {
+        $dump = $root->dump_tree( mode => 'full' );
+    };
+
+    if ( defined $t->{dump_errors} ) {
+        my $nb = 0;
+        my @tf = @{ $t->{dump_errors} };
+        while (@tf) {
+            my $qr = shift @tf;
+            throws_ok { &$risky } $qr, "Failed dump $nb of $model_test config tree";
+            my $fix = shift @tf;
+            $root->load($fix);
+            ok( 1, "Fixed error nb " . $nb++ );
+        }
+    }
+
+    if ( exists $t->{dump_warnings} and not defined $t->{dump_warnings} ) {
+        local $Config::Model::Value::nowarning = 1;
+        &$risky;
+        ok( 1, "Ran dump_tree (no warning check)" );
+    }
+    else {
+        warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
+    }
+    ok( $dump, "Dumped $model_test config tree in full mode" );
+
+    print $dump if $trace;
+    return $dump;
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -210,38 +245,8 @@ sub run_model_test {
         load_instructions ($root,$t,$trace) if $t->{load} ;
 
         apply_fix($inst) if  $t->{apply_fix};
-        print "dumping tree ...\n" if $trace;
-        my $dump  = '';
-        my $risky = sub {
-            $dump = $root->dump_tree( mode => 'full' );
-        };
 
-        if ( defined $t->{dump_errors} ) {
-            my $nb = 0;
-            my @tf = @{ $t->{dump_errors} };
-            while (@tf) {
-                my $qr = shift @tf;
-                throws_ok { &$risky } $qr,
-                  "Failed dump $nb of $model_test config tree";
-                my $fix = shift @tf;
-                $root->load($fix);
-                ok( 1, "Fixed error nb " . $nb++ );
-            }
-        }
-
-        if ( exists $t->{dump_warnings}
-            and not defined $t->{dump_warnings} )
-        {
-            local $Config::Model::Value::nowarning = 1;
-            &$risky;
-            ok( 1, "Ran dump_tree (no warning check)" );
-        }
-        else {
-            warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
-        }
-        ok( $dump, "Dumped $model_test config tree in full mode" );
-
-        print $dump if $trace;
+        dump_tree_full_mode ($model_test, $root, $t, $trace) ;
 
         local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
 
