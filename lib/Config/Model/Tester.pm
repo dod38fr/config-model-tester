@@ -227,6 +227,13 @@ sub check_annotation {
     }
 }
 
+sub write_data_back {
+    my ($model_test, $inst, $t) = @_;
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
+    $inst->write_back( force => 1 );
+    ok( 1, "$model_test write back done" );
+}
+
 sub check_file_content {
     my ($wr_dir, $t) = @_;
 
@@ -340,8 +347,7 @@ sub run_model_test {
 
         check_annotation($root,$t) if $t->{verify_annotation};
 
-        $inst->write_back( force => 1 );
-        ok( 1, "$model_test write back done" );
+        write_data_back ($model_test, $inst, $t) ;
 
         check_file_content($wr_dir,$t) ;
 
