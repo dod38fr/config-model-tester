@@ -281,6 +281,30 @@ sub check_added_or_removed_files {
     eq_or_diff( \@new_file_list, [ sort @file_list ], "check added or removed files" );
 }
 
+sub create_second_instance {
+    my ($model_test, $t_name, $wr_dir, $wr_dir2,$t) = @_;
+
+    # create another instance to read the conf file that was just written
+    dircopy( $wr_dir->stringify, $wr_dir2->stringify )
+        or die "can't copy from $wr_dir to $wr_dir2: $!";
+
+    my $i2_test = $model->instance(
+        root_class_name => $model_to_test,
+        root_dir        => $wr_dir2->stringify,
+        config_file     => $t->{config_file} ,
+        instance_name   => "$model_test-$t_name-w",
+        check           => $t->{load_check2} || 'yes',
+    );
+
+    ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
+
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
+    my $i2_root = $i2_test->config_root;
+    $i2_root->init;
+
+    return $i2_root;
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -353,23 +377,9 @@ sub run_model_test {
 
         check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
-        # create another instance to read the conf file that was just written
-        dircopy( $wr_dir->stringify, $wr_dir2->stringify )
-          or die "can't copy from $wr_dir to $wr_dir2: $!";
+        my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t);
 
-        my $i2_test = $model->instance(
-            root_class_name => $model_to_test,
-            root_dir        => $wr_dir2->stringify,
-            config_file     => $t->{config_file} ,
-            instance_name   => "$model_test-$t_name-w",
-            check           => $t->{load_check2} || 'yes',
-        );
-
-        ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
-
-        my $i2_root = $i2_test->config_root;
-        $i2_root->init;
-
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
         my $p2_dump = $i2_root->dump_tree();
         ok( $dump, "Dumped $model_test 2nd config tree in custom mode" );
 
