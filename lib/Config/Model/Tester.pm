@@ -201,6 +201,7 @@ sub dump_tree_custom_mode {
 sub check_data {
     my ($root, $t) = @_;
 
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
     my $c = $t->{check} ;
     my @checks = ref $c eq 'ARRAY' ? @$c
         : map { ( $_ => $c->{$_})} sort keys %$c ;
