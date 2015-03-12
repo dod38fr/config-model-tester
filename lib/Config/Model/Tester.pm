@@ -226,6 +226,43 @@ sub check_annotation {
     }
 }
 
+sub check_file_content {
+    my ($wr_dir, $t) = @_;
+
+    if (my $fc = $t->{file_contents} || $t->{file_content}) {
+        foreach my $f (keys %$fc) {
+            my $t = $fc->{$f} ;
+            my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+            foreach (@tests) {
+                file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
+                    "check that $f contains $_";
+            }
+        }
+    }
+
+    if (my $fc = $t->{file_contents_like}) {
+        foreach my $f (keys %$fc) {
+            my $t = $fc->{$f} ;
+            my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+            foreach (@tests) {
+                file_contents_like $wr_dir->file($f)->stringify,  $_,
+                    "check that $f matches regexp $_";
+            }
+        }
+    }
+
+    if (my $fc = $t->{file_contents_unlike}) {
+        foreach my $f (keys %$fc) {
+            my $t = $fc->{$f} ;
+            my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
+            foreach (@tests) {
+                file_contents_unlike $wr_dir->file($f)->stringify,  $_,
+                    "check that $f does not match regexp $_";
+            }
+        }
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -295,38 +332,8 @@ sub run_model_test {
         $inst->write_back( force => 1 );
         ok( 1, "$model_test write back done" );
 
-        if (my $fc = $t->{file_contents} || $t->{file_content}) {
-            foreach my $f (keys %$fc) {
-                my $t = $fc->{$f} ;
-                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
-                foreach (@tests) {
-                    file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
-                        "check that $f contains $_";
-                }
-            }
-        }
+        check_file_content($wr_dir,$t) ;
 
-        if (my $fc = $t->{file_contents_like}) {
-            foreach my $f (keys %$fc) {
-                my $t = $fc->{$f} ;
-                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
-                foreach (@tests) {
-                    file_contents_like $wr_dir->file($f)->stringify,  $_,
-                        "check that $f matches regexp $_";
-                }
-            }
-        }
-
-        if (my $fc = $t->{file_contents_unlike}) {
-            foreach my $f (keys %$fc) {
-                my $t = $fc->{$f} ;
-                my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
-                foreach (@tests) {
-                    file_contents_unlike $wr_dir->file($f)->stringify,  $_,
-                        "check that $f does not match regexp $_";
-                }
-            }
-        }
 
         my @new_file_list;
         if ( $ex_data->is_dir ) {
