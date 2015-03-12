@@ -216,6 +216,16 @@ sub check_data {
     }
 }
 
+sub check_annotation {
+    my ($root, $t) = @_;
+
+    my $annot_check = $t->{verify_annotation};
+    foreach my $path (keys %$annot_check) {
+        my $note = $annot_check->{$path};
+        is( $root->grab($path)->annotation, $note, "check $path annotation" );
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -280,13 +290,7 @@ sub run_model_test {
 
         check_data($root,$t) if $t->{check};
 
-        if (my $annot_check = $t->{verify_annotation}) {
-            foreach my $path (keys %$annot_check) {
-                my $note = $annot_check->{$path};
-                is( $root->grab($path)->annotation,
-                    $note, "check $path annotation" );
-            }
-        }
+        check_annotation($root,$t) if $t->{verify_annotation};
 
         $inst->write_back( force => 1 );
         ok( 1, "$model_test write back done" );
