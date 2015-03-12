@@ -114,6 +114,16 @@ sub list_test_files {
     return sort @file_list;
 }
 
+sub write_config_file {
+    my ($conf_dir,$wr_dir,$t) = @_;
+
+    if ($t->{config_file}) {
+        my $file = $conf_dir ? "$conf_dir/" : '';
+        $file .= $t->{config_file} ;
+        $wr_dir->file($file)->parent->mkpath({mode => 0755} ) ;
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -154,11 +164,7 @@ sub run_model_test {
         my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
             = setup_test ($model_test, $t_name, $wr_root,$trace, $t->{setup});
 
-        if ($t->{config_file}) {
-            my $file = $conf_dir ? "$conf_dir/" : '';
-            $file .= $t->{config_file} ;
-            $wr_dir->file($file)->parent->mkpath({mode => 0755} ) ;
-        }
+        write_config_file($conf_dir,$wr_dir,$t);
 
         my $inst = $model->instance(
             root_class_name => $model_to_test,
