@@ -198,6 +198,24 @@ sub dump_tree_custom_mode {
     return $dump;
 }
 
+sub check_data {
+    my ($root, $t) = @_;
+
+    my $c = $t->{check} ;
+    my @checks = ref $c eq 'ARRAY' ? @$c
+        : map { ( $_ => $c->{$_})} sort keys %$c ;
+
+    while (@checks) {
+        my $path       = shift @checks;
+        my $v          = shift @checks;
+        my $check_v    = ref $v ? delete $v->{value} : $v;
+        my @check_args = ref $v ? %$v : ();
+        my $check_str  = @check_args ? " (@check_args)" : '';
+        is( $root->grab( step => $path, @check_args )->fetch(@check_args),
+            $check_v, "check '$path' value$check_str" );
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -260,18 +278,7 @@ sub run_model_test {
 
         my $dump = dump_tree_custom_mode ($model_test, $root, $t, $trace) ;
 
-        my $c = $t->{check} || {};
-        my @checks = ref $c eq 'ARRAY' ? @$c
-            : map { ( $_ => $c->{$_})} sort keys %$c ;
-        while (@checks) {
-            my $path       = shift @checks;
-            my $v          = shift @checks;
-            my $check_v    = ref $v ? delete $v->{value} : $v;
-            my @check_args = ref $v ? %$v : ();
-            my $check_str  = @check_args ? " (@check_args)" : '';
-            is( $root->grab( step => $path, @check_args )->fetch(@check_args),
-                $check_v, "check '$path' value$check_str" );
-        }
+        check_data($root,$t) if $t->{check};
 
         if (my $annot_check = $t->{verify_annotation}) {
             foreach my $path (keys %$annot_check) {
