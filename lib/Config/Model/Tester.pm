@@ -146,6 +146,13 @@ sub load_instructions {
     ok( 1, "load called" );
 }
 
+sub apply_fix {
+    my $inst = shift;
+    local $Config::Model::Value::nowarning = 1;
+    $inst->apply_fixes;
+    ok( 1, "apply_fixes called" );
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -201,12 +208,8 @@ sub run_model_test {
         check_load_warnings ($root,$t);
 
         load_instructions ($root,$t,$trace) if $t->{load} ;
-        if ( $t->{apply_fix} ) {
-            local $Config::Model::Value::nowarning = 1;
-            $inst->apply_fixes;
-            ok( 1, "apply_fixes called" );
-        }
 
+        apply_fix($inst) if  $t->{apply_fix};
         print "dumping tree ...\n" if $trace;
         my $dump  = '';
         my $risky = sub {
