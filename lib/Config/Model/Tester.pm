@@ -188,6 +188,16 @@ sub dump_tree_full_mode {
     return $dump;
 }
 
+sub dump_tree_custom_mode {
+    my ($model_test, $root, $t, $trace) = @_;
+
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
+
+    my $dump = $root->dump_tree();
+    ok( $dump, "Dumped $model_test config tree in custom mode" );
+    return $dump;
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -248,10 +258,7 @@ sub run_model_test {
 
         dump_tree_full_mode ($model_test, $root, $t, $trace) ;
 
-        local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
-
-        $dump = $root->dump_tree();
-        ok( $dump, "Dumped $model_test config tree in custom mode" );
+        my $dump = dump_tree_custom_mode ($model_test, $root, $t, $trace) ;
 
         my $c = $t->{check} || {};
         my @checks = ref $c eq 'ARRAY' ? @$c
