@@ -138,6 +138,14 @@ sub check_load_warnings {
     }
 }
 
+sub load_instructions {
+    my ($root,$t,$trace) = @_ ;
+
+    print "Loading $t->{load}\n" if $trace ;
+    $root->load( $t->{load} );
+    ok( 1, "load called" );
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -191,12 +199,8 @@ sub run_model_test {
         my $root = $inst->config_root;
 
         check_load_warnings ($root,$t);
-        if ( $t->{load} ) {
-            print "Loading $t->{load}\n" if $trace ;
-            $root->load( $t->{load} );
-            ok( 1, "load called" );
-        }
 
+        load_instructions ($root,$t,$trace) if $t->{load} ;
         if ( $t->{apply_fix} ) {
             local $Config::Model::Value::nowarning = 1;
             $inst->apply_fixes;
