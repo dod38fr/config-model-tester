@@ -263,6 +263,16 @@ sub check_file_content {
     }
 }
 
+sub check_added_or_removed_files {
+    my ( $conf_dir, $wr_dir, $t, @file_list) = @_;
+
+    # copy whole dir
+    my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
+    my @new_file_list = list_test_files($debian_dir) ;
+    $t->{file_check_sub}->( \@file_list ) if defined $t->{file_check_sub};
+    eq_or_diff( \@new_file_list, [ sort @file_list ], "check added or removed files" );
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -334,18 +344,7 @@ sub run_model_test {
 
         check_file_content($wr_dir,$t) ;
 
-
-        my @new_file_list;
-        if ( $ex_data->is_dir ) {
-
-            # copy whole dir
-            my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
-            my @new_file_list = list_test_files($debian_dir) ;
-            $t->{file_check_sub}->( \@file_list )
-              if defined $t->{file_check_sub};
-            eq_or_diff( \@new_file_list, [ sort @file_list ],
-                "check added or removed files" );
-        }
+        check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
         # create another instance to read the conf file that was just written
         dircopy( $wr_dir->stringify, $wr_dir2->stringify )
