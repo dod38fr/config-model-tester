@@ -314,6 +314,20 @@ sub dump_second_tree_in_custom_mode {
     return $p2_dump ;
 }
 
+sub check_data_from_second_instance {
+    my ($i2_root, $t) = @_;
+
+    my $wr_check = $t->{wr_check} ;
+    foreach my $path ( sort keys %$wr_check ) {
+        my $v          = $wr_check->{$path};
+        my $check_v    = ref $v ? delete $v->{value} : $v;
+        my @check_args = ref $v ? %$v : ();
+
+        is( $i2_root->grab( step => $path, @check_args )->fetch(@check_args),
+            $check_v, "wr_check $path value (@check_args)" );
+    }
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -399,14 +413,7 @@ sub run_model_test {
             "check that original $model_test file was not clobbered" )
                 if defined $conf_file_name ;
 
-        my $wr_check = $t->{wr_check} || {};
-        foreach my $path ( sort keys %$wr_check ) {
-            my $v          = $wr_check->{$path};
-            my $check_v    = ref $v ? delete $v->{value} : $v;
-            my @check_args = ref $v ? %$v : ();
-            is( $i2_root->grab( step => $path, @check_args )->fetch(@check_args),
-                $check_v, "wr_check $path value (@check_args)" );
-        }
+        check_data_from_second_instance($i2_root, $t) if $t->{wr_check} ;
 
         note("End of subtest $model_test $t_name");
 
