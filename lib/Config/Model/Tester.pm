@@ -9,14 +9,9 @@ use 5.10.1;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
-use File::Path;
-use File::Copy;
+use Path::Tiny;
 use File::Copy::Recursive qw(fcopy rcopy dircopy);
-use File::Find;
 
-use Path::Class 0.29;
-
-use File::Spec ;
 use Test::Warn;
 use Test::Exception;
 use Test::File::Contents ;
@@ -44,17 +39,19 @@ sub setup_test {
     my ( $model_test, $t_name, $wr_root, $trace, $setup ) = @_;
 
     # cleanup before tests
-    $wr_root->rmtree();
+    $wr_root->remove_tree();
     $wr_root->mkpath( { mode => 0755 } );
 
-    my $wr_dir    = $wr_root->subdir('test-' . $t_name);
-    my $wr_dir2   = $wr_root->subdir('test-' . $t_name.'-w');
+    my $wr_dir    = $wr_root->child('test-' . $t_name);
+    my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
     my $conf_file ;
-    $conf_file = $wr_dir->file($conf_dir,$conf_file_name) if defined $conf_file_name;
+    $conf_file = $wr_dir->child($conf_dir,$conf_file_name)
+        if $conf_dir and $conf_file_name;
 
-    my $ex_dir = dir('t')->subdir('model_tests.d', "$model_test-examples");
-    my $ex_data = -d $ex_dir->subdir($t_name)->stringify ? $ex_dir->subdir($t_name) : $ex_dir->file($t_name);
+    my $ex_dir = path('t')->child('model_tests.d', "$model_test-examples");
+    my $ex_data = $ex_dir->child($t_name);
     my @file_list;
+
     if ($setup) {
         foreach my $file (keys %$setup) {
             my $map = $setup->{$file} ;
@@ -64,16 +61,16 @@ sub setup_test {
             if (not defined $destination_str) {
                 die "$model_test $t_name setup error: cannot find destination for test file $file" ;
             }
-            my $destination = $wr_dir->file($destination_str) ;
+            my $destination = $wr_dir->child($destination_str) ;
             $destination->parent->mkpath( { mode => 0755 }) ;
-            my $data = $ex_data->file($file)->slurp() ;
+            my $data = $ex_data->child($file)->slurp() ;
             $destination->spew( $data );
             @file_list = list_test_files ($wr_dir);
         }
     }
     elsif ( $ex_data->is_dir ) {
         # copy whole dir
-        my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
+        my $debian_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
         $debian_dir->mkpath( { mode => 0755 });
         say "dircopy ". $ex_data->stringify . '->'. $debian_dir->stringify
             if $trace ;
@@ -100,16 +97,15 @@ sub list_test_files {
     my $debian_dir = shift;
     my @file_list ;
 
-	my $chop = scalar $debian_dir->dir_list();
-	my $scan = sub {
-		my ($child) = @_;
-		return if $child->is_dir ;
-		my @l = $child->components();
-		splice @l,0,$chop;
-		push @file_list, '/'.join('/',@l) ; # build a unix-like path even on windows
-	};
+    my $iter = $debian_dir->iterator({ recurse => 1 });
+    my $debian_str = $debian_dir->stringify;
 
-	$debian_dir->recurse(callback => $scan);
+	while ( my $child = $iter->() ) {
+		next if $child->is_dir ;
+
+		push @file_list, '/' . $child->relative($debian_str)->stringify;
+		#push @file_list, '/'.join('/',@l) ; # build a unix-like path even on windows
+	};
 
     return sort @file_list;
 }
@@ -120,7 +116,7 @@ sub write_config_file {
     if ($t->{config_file}) {
         my $file = $conf_dir ? "$conf_dir/" : '';
         $file .= $t->{config_file} ;
-        $wr_dir->file($file)->parent->mkpath({mode => 0755} ) ;
+        $wr_dir->child($file)->parent->mkpath({mode => 0755} ) ;
     }
 }
 
@@ -242,7 +238,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach (@tests) {
-                file_contents_eq_or_diff $wr_dir->file($f)->stringify,  $_,
+                file_contents_eq_or_diff $wr_dir->child($f)->stringify,  $_,
                     "check that $f contains $_";
             }
         }
@@ -253,7 +249,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach (@tests) {
-                file_contents_like $wr_dir->file($f)->stringify,  $_,
+                file_contents_like $wr_dir->child($f)->stringify,  $_,
                     "check that $f matches regexp $_";
             }
         }
@@ -264,7 +260,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach (@tests) {
-                file_contents_unlike $wr_dir->file($f)->stringify,  $_,
+                file_contents_unlike $wr_dir->child($f)->stringify,  $_,
                     "check that $f does not match regexp $_";
             }
         }
@@ -275,7 +271,7 @@ sub check_added_or_removed_files {
     my ( $conf_dir, $wr_dir, $t, @file_list) = @_;
 
     # copy whole dir
-    my $debian_dir = $conf_dir ? $wr_dir->subdir($conf_dir) : $wr_dir ;
+    my $debian_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
     my @new_file_list = list_test_files($debian_dir) ;
     $t->{file_check_sub}->( \@file_list ) if defined $t->{file_check_sub};
     eq_or_diff( \@new_file_list, [ sort @file_list ], "check added or removed files" );
@@ -452,7 +448,7 @@ sub run_tests {
     ok( 1, "compiled" );
 
     # pseudo root where config files are written by config-model
-    my $wr_root = dir('wr_root');
+    my $wr_root = path('wr_root');
 
     my @group_of_tests = grep { /-test-conf.pl$/ } glob("t/model_tests.d/*");
 
