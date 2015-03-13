@@ -78,12 +78,15 @@ sub setup_test {
           || die "dircopy $ex_data -> $debian_dir failed:$!";
         @file_list = list_test_files ($debian_dir);
     }
-    else {
+    elsif ( $ex_data->exists ) {
         # just copy file
         say "file copy ". $ex_data->stringify . '->'. $conf_file->stringify
             if $trace ;
         fcopy( $ex_data->stringify, $conf_file->stringify )
           || die "copy $ex_data -> $conf_file failed:$!";
+    }
+    else {
+        note ('starting test without original config data, i.e. from scratch');
     }
     ok( 1, "Copied $model_test example $t_name" );
 
