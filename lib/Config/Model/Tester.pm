@@ -305,6 +305,15 @@ sub create_second_instance {
     return $i2_root;
 }
 
+sub dump_second_tree_in_custom_mode {
+    my ($model_test, $i2_root, $t) = @_;
+
+    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
+    my $p2_dump = $i2_root->dump_tree();
+    ok( $p2_dump, "Dumped $model_test 2nd config tree in custom mode" );
+    return $p2_dump ;
+}
+
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -379,11 +388,10 @@ sub run_model_test {
 
         my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t);
 
-    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
-        my $p2_dump = $i2_root->dump_tree();
-        ok( $dump, "Dumped $model_test 2nd config tree in custom mode" );
+        my $p2_dump = dump_second_tree_in_custom_mode($model_test, $i2_root, $t) ;
 
-        eq_or_diff( $p2_dump, $dump,
+        eq_or_diff(
+            $p2_dump, $dump,
             "compare original $model_test custom data with 2nd instance custom data"
         );
 
