@@ -198,10 +198,9 @@ sub dump_tree_custom_mode {
 }
 
 sub check_data {
-    my ($root, $t) = @_;
+    my ($label, $root, $c, $nw) = @_;
 
-    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
-    my $c = $t->{check} ;
+    local $Config::Model::Value::nowarning = $nw || 0;
     my @checks = ref $c eq 'ARRAY' ? @$c
         : map { ( $_ => $c->{$_})} sort keys %$c ;
 
@@ -212,7 +211,7 @@ sub check_data {
         my @check_args = ref $v ? %$v : ();
         my $check_str  = @check_args ? " (@check_args)" : '';
         is( $root->grab( step => $path, @check_args )->fetch(@check_args),
-            $check_v, "check '$path' value$check_str" );
+            $check_v, "$label check '$path' value$check_str" );
     }
 }
 
@@ -304,20 +303,6 @@ sub create_second_instance {
     return $i2_root;
 }
 
-sub check_data_from_second_instance {
-    my ($i2_root, $t) = @_;
-
-    my $wr_check = $t->{wr_check} ;
-    foreach my $path ( sort keys %$wr_check ) {
-        my $v          = $wr_check->{$path};
-        my $check_v    = ref $v ? delete $v->{value} : $v;
-        my @check_args = ref $v ? %$v : ();
-
-        is( $i2_root->grab( step => $path, @check_args )->fetch(@check_args),
-            $check_v, "wr_check $path value (@check_args)" );
-    }
-}
-
 sub run_model_test {
     my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
@@ -380,7 +365,7 @@ sub run_model_test {
 
         my $dump = dump_tree_custom_mode ($model_test, $root, $t, $trace) ;
 
-        check_data($root,$t) if $t->{check};
+        check_data("first", $root, $t->{check}, $t->{no_warnings}) if $t->{check};
 
         check_annotation($root,$t) if $t->{verify_annotation};
 
@@ -403,7 +388,7 @@ sub run_model_test {
             "check that original $model_test file was not clobbered" )
                 if defined $conf_file_name ;
 
-        check_data_from_second_instance($i2_root, $t) if $t->{wr_check} ;
+        check_data("second", $i2_root, $t->{wr_check}, $t->{no_warnings}) if $t->{wr_check} ;
 
         note("End of subtest $model_test $t_name");
 
