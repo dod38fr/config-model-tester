@@ -188,12 +188,12 @@ sub dump_tree_full_mode {
 }
 
 sub dump_tree_custom_mode {
-    my ($model_test, $root, $t, $trace) = @_;
+    my ($label, $root, $t, $trace) = @_;
 
     local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
 
     my $dump = $root->dump_tree();
-    ok( $dump, "Dumped $model_test config tree in custom mode" );
+    ok( $dump, "Dumped $label config tree in custom mode" );
     return $dump;
 }
 
@@ -304,15 +304,6 @@ sub create_second_instance {
     return $i2_root;
 }
 
-sub dump_second_tree_in_custom_mode {
-    my ($model_test, $i2_root, $t) = @_;
-
-    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
-    my $p2_dump = $i2_root->dump_tree();
-    ok( $p2_dump, "Dumped $model_test 2nd config tree in custom mode" );
-    return $p2_dump ;
-}
-
 sub check_data_from_second_instance {
     my ($i2_root, $t) = @_;
 
@@ -401,7 +392,7 @@ sub run_model_test {
 
         my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t);
 
-        my $p2_dump = dump_second_tree_in_custom_mode($model_test, $i2_root, $t) ;
+        my $p2_dump = dump_tree_custom_mode("second $model_test", $i2_root, $t) ;
 
         eq_or_diff(
             $p2_dump, $dump,
