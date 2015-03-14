@@ -137,6 +137,14 @@ sub check_load_warnings {
     }
 }
 
+sub run_update {
+    my ($root,$t) = @_;
+    my %args = %{$t->{update}};
+    note("updating config with %args");
+    my $res = $root->update( %args ) ;
+    ok($res,"updated configuration");
+}
+
 sub load_instructions {
     my ($root,$t,$trace) = @_ ;
 
@@ -356,6 +364,8 @@ sub run_model_test {
         my $root = $inst->config_root;
 
         check_load_warnings ($root,$t);
+
+        run_update($root,$t) if $t->{update};
 
         load_instructions ($root,$t,$trace) if $t->{load} ;
 
@@ -644,6 +654,12 @@ E.g.
     load_warnings => [ qr/Missing/, (qr/deprecated/) x 3 , ],
 
 Use an empty array_ref to masks load warnings.
+
+=item *
+
+Optionally run L<update|App::Cme::Command::update> command with the passed arguments:
+
+    update => { in => 'some-test-data.txt' }
 
 =item *
 
