@@ -50,6 +50,7 @@ sub setup_test {
 
     my $ex_dir = path('t')->child('model_tests.d', "$model_test-examples");
     my $ex_data = $ex_dir->child($t_name);
+
     my @file_list;
 
     if ($setup) {
@@ -138,11 +139,19 @@ sub check_load_warnings {
 }
 
 sub run_update {
-    my ($root,$t) = @_;
+    my ($inst, $dir, $t) = @_;
     my %args = %{$t->{update}};
+
+    my $ret = delete $args{returns};
+
     note("updating config with %args");
-    my $res = $root->update( %args ) ;
-    ok($res,"updated configuration");
+    my $res = $inst->update( from_dir => $dir, quiet => 1, %args ) ;
+    if (defined $ret) {
+        is($res,$ret,"updated configuration, got expected return value");
+    }
+    else {
+        ok(1,"updated configuration");
+    }
 }
 
 sub load_instructions {
@@ -365,7 +374,7 @@ sub run_model_test {
 
         check_load_warnings ($root,$t);
 
-        run_update($root,$t) if $t->{update};
+        run_update($inst,$wr_dir,$t) if $t->{update};
 
         load_instructions ($root,$t,$trace) if $t->{load} ;
 
@@ -657,9 +666,12 @@ Use an empty array_ref to masks load warnings.
 
 =item *
 
-Optionally run L<update|App::Cme::Command::update> command with the passed arguments:
+Optionally run L<update|App::Cme::Command::update> command:
 
-    update => { in => 'some-test-data.txt' }
+    update => { in => 'some-test-data.txt', returns => 'foo' }
+
+C<returns> is the expected return value (optional). All other arguments are passed to C<update>
+method.
 
 =item *
 
