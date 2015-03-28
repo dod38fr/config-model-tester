@@ -224,11 +224,17 @@ sub check_data {
     while (@checks) {
         my $path       = shift @checks;
         my $v          = shift @checks;
-        my $check_v    = ref $v ? delete $v->{value} : $v;
-        my @check_args = ref $v ? %$v : ();
+        my $check_v    = ref $v eq 'HASH' ? delete $v->{value} : $v;
+        my @check_args = ref $v eq 'HASH' ? %$v : ();
         my $check_str  = @check_args ? " (@check_args)" : '';
-        is( $root->grab( step => $path, @check_args )->fetch(@check_args),
-            $check_v, "$label check '$path' value$check_str" );
+        my $obj = $root->grab( step => $path, @check_args, type => 'leaf' );
+        my $got = $obj->fetch(@check_args);
+        if (ref $check_v eq 'Regexp') {
+            like( $got, $check_v, "$label check '$path' value with regexp$check_str" );
+        }
+        else {
+            is( $got, $check_v, "$label check '$path' value$check_str" );
+        }
     }
 }
 
@@ -728,6 +734,13 @@ by passing a hash ref instead of a scalar :
 
 The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
 and L<fetch|Config::Model::Value/"fetch( ... )">
+
+A regexp can also be used to check value:
+
+   check => [
+      "License text" => qr/gnu/i,
+      "License text" => { mode => 'custom', value => qr/gnu/i },
+   ]
 
 =item *
 
