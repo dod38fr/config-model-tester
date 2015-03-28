@@ -1,5 +1,18 @@
 {{$NEXT}}
 
+2.049 2015-03-28
+
+    * New features:
+      * check argument also accept a regexp ( i.e. a qr// )
+      + added option to run 'update' test
+      * Allow to start test without config file (from scratch)
+
+    * changed dependency:
+      * replaced Path::Class with Path::Tiny
+
+    * Internal changes:
+      * refactored most of the logic in separate functions
+
 2.048 2014-06-04
 
     * C::M::Tester: added load_check2 parameter
