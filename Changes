@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+2.050 2015-03-29
+
+   * Bug fix:
+     * fix check_data function
+
 2.049 2015-03-28
 
     * New features:
