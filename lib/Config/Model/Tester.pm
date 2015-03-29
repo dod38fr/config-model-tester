@@ -227,7 +227,7 @@ sub check_data {
         my $check_v    = ref $v eq 'HASH' ? delete $v->{value} : $v;
         my @check_args = ref $v eq 'HASH' ? %$v : ();
         my $check_str  = @check_args ? " (@check_args)" : '';
-        my $obj = $root->grab( step => $path, @check_args, type => 'leaf' );
+        my $obj = $root->grab( step => $path, type => ['leaf','check_list'], @check_args );
         my $got = $obj->fetch(@check_args);
         if (ref $check_v eq 'Regexp') {
             like( $got, $check_v, "$label check '$path' value with regexp$check_str" );
