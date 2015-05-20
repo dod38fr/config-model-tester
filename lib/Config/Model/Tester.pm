@@ -248,6 +248,52 @@ sub check_annotation {
     }
 }
 
+sub has_key {
+    my ($root, $c, $nw) = @_;
+
+    _test_key($root, $c, $nw, 0);
+}
+
+sub has_not_key {
+    my ($root, $c, $nw) = @_;
+
+    _test_key($root, $c, $nw, 1);
+}
+
+sub _test_key {
+    my ($root, $c, $nw, $invert) = @_;
+
+    my @checks = ref $c eq 'ARRAY' ? @$c
+        : map { ( $_ => $c->{$_})} sort keys %$c ;
+
+    while (@checks) {
+        my $path       = shift @checks;
+        my $spec       = shift @checks;
+        my @key_checks = ref $spec eq 'ARRAY' ? @$spec: ($spec);
+
+        my $obj = $root->grab( step => $path, type => 'hash' );
+        my @keys = $obj->fetch_all_indexes;
+        my $res = 0;
+        foreach my $check (@key_checks) {
+            my @match  ;
+            foreach my $k (@keys) {
+                if (ref $check eq 'Regexp') {
+                    push @match, $k if $k =~ $check;
+                }
+                else {
+                    push @match, $k if $k eq $check;
+                }
+            }
+            if ($invert) {
+                is(scalar @match,0, "check $check matched no key" );
+            }
+            else {
+                ok(scalar @match, "check $check matched with keys @match" );
+            }
+        }
+    }
+}
+
 sub write_data_back {
     my ($model_test, $inst, $t) = @_;
     local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
@@ -391,6 +437,9 @@ sub run_model_test {
         my $dump = dump_tree_custom_mode ($model_test, $root, $t, $trace) ;
 
         check_data("first", $root, $t->{check}, $t->{no_warnings}) if $t->{check};
+
+        has_key     ( $root, $t->{has_key}, $t->{no_warnings}) if $t->{has_key} ;
+        has_not_key ( $root, $t->{has_not_key}, $t->{no_warnings}) if $t->{has_not_key} ;
 
         check_annotation($root,$t) if $t->{verify_annotation};
 
@@ -741,6 +790,25 @@ A regexp can also be used to check value:
       "License text" => qr/gnu/i,
       "License text" => { mode => 'custom', value => qr/gnu/i },
    ]
+
+=item *
+
+Verify if a hash contains one or more keys (or keys matching a regexp):
+
+ has_key => [
+    'sections' => 'debian', # sections must point to a hash element
+    'control' => [qw/source binary/],
+    'copyright Files' => qr/.c$/,
+    'copyright Files' => [qr/\.h$/], qr/\.c$/],
+ ],
+
+=item *
+
+Verify that a hash has B<not> a key (or a key matching a regexp):
+
+ has_not_key => [
+    'copyright Files' => qr/.virus$/ # silly, isn't ?
+ ],
 
 =item *
 
