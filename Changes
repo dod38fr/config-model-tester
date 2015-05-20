@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+2.051 2015-05-20
+
+  * New features:
+    + Added has_key and has_not_key parameters to check hash
+      element content
+
 2.050 2015-03-29
 
    * Bug fix:
