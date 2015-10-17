@@ -1,5 +1,16 @@
 {{$NEXT}}
 
+2.052 2015-10-17
+
+  * New features:
+    * subtest filter parameter is now a regexp.
+      I.e you can filter tests like this:
+        prove t/model_test.t :: x stuff '^foo$'
+    * you can run update test with no_warnings and quiet param
+    * global no_warnings param also apply to load and dump
+  * Misc:
+    * bug tracker is now on github
+
 2.051 2015-05-20
 
   * New features:
