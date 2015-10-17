@@ -144,8 +144,10 @@ sub run_update {
 
     my $ret = delete $args{returns};
 
-    note("updating config with %args");
-    my $res = $inst->update( from_dir => $dir, quiet => 1, %args ) ;
+    local $Config::Model::Value::nowarning = $args{no_warnings} || $t->{no_warnings} || 0;
+
+    note("updating config with ". join(' ',%args));
+    my $res = $inst->update( from_dir => $dir, %args ) ;
     if (defined $ret) {
         is($res,$ret,"updated configuration, got expected return value");
     }
