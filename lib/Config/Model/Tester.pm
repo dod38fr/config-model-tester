@@ -657,6 +657,12 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
 
  1; # to keep Perl happy
 
+You can suppress warnings by specifying C<< no_warnings => 1 >>. On
+the other hand, you may also want to check for warnings specifid to
+your model. In this case, you should avoid specifying C<no_warnings>
+here and use the more specify warning tests or warning filters
+mentioned below.
+
 See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
 
 =head2 Internal tests
@@ -725,10 +731,11 @@ Use an empty array_ref to masks load warnings.
 
 Optionally run L<update|App::Cme::Command::update> command:
 
-    update => { in => 'some-test-data.txt', returns => 'foo' }
+    update => { in => 'some-test-data.txt', returns => 'foo' , no_warnings => [ 0 | 1 ] }
 
-C<returns> is the expected return value (optional). All other arguments are passed to C<update>
-method.
+C<returns> is the expected return value (optional). All other
+arguments are passed to C<update> method. Note that C<< quiet => 1 >>
+may be useful for less verbose test.
 
 =item *
 
@@ -828,7 +835,7 @@ Write back the config data in C<< wr_root/<subtest name>/ >>.
 Note that write back is forced, so the tested configuration files are
 written back even if the configuration values were not changed during the test.
 
-You can skip warning when writing back with:
+You can skip warning when writing back with the global :
 
     no_warnings => 1,
 
