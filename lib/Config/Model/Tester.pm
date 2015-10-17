@@ -403,7 +403,7 @@ sub run_model_test {
     my $idx = 0;
     foreach my $t (@tests) {
         my $t_name = $t->{name} || "t$idx";
-        if ( defined $do and $do ne $t_name ) {
+        if ( defined $do and $t_name !~ /$do/) {
             $idx++;
             next;
         }
@@ -926,10 +926,13 @@ The model name to tests. E.g.:
 
 =item *
 
-The required subtest E.g.:
+A regexp to filter subtest E.g.:
 
-  # run only fstab tests t0
-  prove -lv t/model_test.t :: x fstab t0
+  # run only fstab tests foobar subtest
+  prove -lv t/model_test.t :: x fstab foobar
+
+  # run only fstab tests foo subtest
+  prove -lv t/model_test.t :: x fstab '^foo$'
 
 =back
 
