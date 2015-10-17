@@ -453,9 +453,11 @@ sub run_model_test {
 
         my $p2_dump = dump_tree_custom_mode("second $model_test", $i2_root, $t) ;
 
+        unified_diff;
         eq_or_diff(
-            $p2_dump, $dump,
-            "compare original $model_test custom data with 2nd instance custom data"
+            [ split /\n/,$p2_dump ],
+            [ split /\n/,$dump ],
+            "compare original $model_test custom data with 2nd instance custom data",
         );
 
         ok( -s "$wr_dir2/$conf_dir/$conf_file_name" ,
