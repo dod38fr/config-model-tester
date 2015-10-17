@@ -127,7 +127,7 @@ sub write_config_file {
 sub check_load_warnings {
     my ($root,$t) = @_ ;
 
-    if ( exists $t->{load_warnings} and not defined $t->{load_warnings} ) {
+    if ( ($t->{no_warnings} or exists $t->{load_warnings}) and not defined $t->{load_warnings}) {
         local $Config::Model::Value::nowarning = 1;
         $root->init;
         ok( 1,"Read configuration and created instance with init() method without warning check" );
@@ -190,7 +190,7 @@ sub dump_tree_full_mode {
         }
     }
 
-    if ( exists $t->{dump_warnings} and not defined $t->{dump_warnings} ) {
+    if ( ($t->{no_warnings} or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
         local $Config::Model::Value::nowarning = 1;
         &$risky;
         ok( 1, "Ran dump_tree (no warning check)" );
