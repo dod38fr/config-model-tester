@@ -206,6 +206,8 @@ sub dump_tree_full_mode {
     return $dump;
 }
 
+# TODO: factorise with function above and create parameters to
+# handle warnings in both cases with warnings_like
 sub dump_tree_custom_mode {
     my ($label, $root, $t, $trace) = @_;
 
