@@ -23,6 +23,7 @@ use Test::Memory::Cycle ;
 # creating a build dependency loop.
 eval {
     require Config::Model;
+    require Config::Model::Lister;
     require Config::Model::Value;
     require Config::Model::BackendMgr;
 } ;
@@ -397,8 +398,20 @@ sub run_model_test {
         return;
     }
 
+    my ($trash, $appli_info, $applications) = Config::Model::Lister::available_models(1);
+
     # even undef, this resets the global variable there
     Config::Model::BackendMgr::_set_test_home($home_for_test) ;
+    if (not defined $model_to_test) {
+        $model_to_test = $applications->{$model_test};
+        if (not defined $model_to_test) {
+            my @k = sort values %$applications;
+            my @files = map { $_->{_file} // 'unknown' } values %$appli_info ;
+            die "Cannot find model name for $model_test in files >@files<. Know dev models are >@k<. ".
+                "Check your test name (the file ending with -test-conf.pl) or set the \$model_to_test global variable\n";
+        }
+    }
+
 
     my $note ="$model_test uses $model_to_test model";
     $note .= " on file $conf_file_name" if defined $conf_file_name;
