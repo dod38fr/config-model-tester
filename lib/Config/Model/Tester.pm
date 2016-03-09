@@ -403,6 +403,7 @@ sub run_model_test {
 
     # even undef, this resets the global variable there
     Config::Model::BackendMgr::_set_test_home($home_for_test) ;
+
     if (not defined $model_to_test) {
         $model_to_test = $applications->{$model_test};
         if (not defined $model_to_test) {
@@ -651,12 +652,12 @@ See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-mode
 =head2 Basic test specification
 
 Each model test is specified in C<< <model>-test-conf.pl >>. This file
-contains a set of global variable. (yes, global variables are often bad ideas
+contains a set of global variables. (yes, global variables are often bad ideas
 in programs, but they are handy for tests):
 
  # config file name (used to copy test case into test wr_root directory)
  $conf_file_name = "fstab" ;
- # config dir where to copy the file
+ # config dir where to copy the file (optional)
  #$conf_dir = "etc" ;
  # home directory for this test
  $home_for_test = '/home/joe' ;
