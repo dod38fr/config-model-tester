@@ -354,7 +354,7 @@ sub check_added_or_removed_files {
 }
 
 sub create_second_instance {
-    my ($model_test, $t_name, $wr_dir, $wr_dir2,$t) = @_;
+    my ($model_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override) = @_;
 
     # create another instance to read the conf file that was just written
     dircopy( $wr_dir->stringify, $wr_dir2->stringify )
@@ -366,6 +366,7 @@ sub create_second_instance {
         config_file     => $t->{config_file} ,
         instance_name   => "$model_test-$t_name-w",
         check           => $t->{load_check2} || 'yes',
+        config_dir      => $config_dir_override,
     );
 
     ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
@@ -412,6 +413,7 @@ sub run_model_test {
         }
     }
 
+    my $config_dir_override = $appli_info->{$model_test}{config_dir}; # may be undef
 
     my $note ="$model_test uses $model_to_test model";
     $note .= " on file $conf_file_name" if defined $conf_file_name;
@@ -437,6 +439,7 @@ sub run_model_test {
             instance_name   => "$model_test-" . $t_name,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
+            config_dir      => $config_dir_override,
         );
 
         my $root = $inst->config_root;
@@ -466,7 +469,7 @@ sub run_model_test {
 
         check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
-        my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t);
+        my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
 
         my $p2_dump = dump_tree_custom_mode("second $model_test", $i2_root, $t) ;
 
