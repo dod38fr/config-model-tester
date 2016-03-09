@@ -481,11 +481,10 @@ sub run_model_test {
 sub run_tests {
     my ( $arg, $test_only_model, $do ) = @_;
 
-    my ( $log, $show ) = (0) x 2;
+    my $log = 0;
 
     my $trace = ($arg =~ /t/) ? 1 : 0;
     $log  = 1 if $arg =~ /l/;
-    $show = 1 if $arg =~ /s/;
 
     my $log4perl_user_conf_file = ($ENV{HOME} || '') . '/.log4config-model';
 
