@@ -532,12 +532,11 @@ sub run_tests {
  use Config::Model::Tester ;
  use ExtUtils::testlib;
 
- my $arg = shift || '';
- my $test_only_model = shift || '';
- my $do = shift ;
+ my $arg = shift || ''; # typically e t l
+ my $test_only_model = shift || ''; # only run one set of test
+ my $do = shift ; # select subtests to run with a regexp
 
  run_tests($arg, $test_only_model, $do) ;
-
 
 =head1 DESCRIPTION
 
@@ -545,25 +544,31 @@ This class provides a way to test configuration models with tests files.
 This class was designed to tests several models and several tests
 cases per model.
 
-A specific layout for test files must be followed
+A specific layout for test files must be followed.
 
 =head2 Simple test file layout
 
  t
  |-- model_test.t
- \-- model_tests.d
-     |-- lcdd-test-conf.pl   # test specification
+ \-- model_tests.d           # do not change directory name
+     |-- lcdd-test-conf.pl   # test specification for lcdd model
      \-- lcdd-examples
-         |-- t0              # test case t0
-         \-- LCDD-0.5.5      # test case for older LCDproc
+         |-- t0              # subtest t0
+         \-- LCDD-0.5.5      # subtest for older LCDproc
 
 In the example above, we have 1 model to test: C<lcdd> and 2 tests
-cases.
+cases. The model name matches the file specified in
+C<lib/Config/Model/*.d> directory. In this case, the model name matches 
+C<lib/Config/Model/system.d/lcdproc>
 
-Test specification is written in C<lcdd-test-conf.pl> file. Test
-cases are plain files in C<lcdd-examples>. C<lcdd-test-conf.pl> will
-contain instructions so that each file will be used as a
-C</etc/LCDd.conf> file during each test case.
+Test specification is written in C<lcdd-test-conf.pl> file (i.e. this
+modules looks for files named  like C<< <model-name>-test-conf.pl> >>).
+
+Subtests are specified in files in directory C<lcdd-examples> (
+i.e. this modules looks for subtests in directory 
+C<< <model-name>-examples.pl> >>. C<lcdd-test-conf.pl> contains
+instructions so that each file will be used as a C</etc/LCDd.conf>
+file during each test case.
 
 C<lcdd-test-conf.pl> can contain specifications for more test
 case. Each test case will require a new file in C<lcdd-examples>
@@ -579,7 +584,7 @@ provided in sub-directories:
  t/model_tests.d
  \-- dpkg-test-conf.pl         # test specification
  \-- dpkg-examples
-     \-- libversion            # example subdir
+     \-- libversion            # example subdir, used as subtest name
          \-- debian            # directory for one test case
              |-- changelog
              |-- compat
@@ -592,7 +597,7 @@ provided in sub-directories:
 
 In the example above, the test specification is written in
 C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
-C<dpkg-test-conf.pl> will contain instruction so that each directory
+C<dpkg-test-conf.pl> will contain instructions so that each directory
 under C<dpkg-examples> will be used.
 
 See L</Examples> for a link to the (many) Dpkg model tests
@@ -645,7 +650,7 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
  # config model name to test
  $model_to_test = "Fstab" ;
 
- # list of tests
+ # list of tests. This modules looks for @tests global variable
  @tests = (
     {
      # test name
@@ -655,16 +660,15 @@ Here, C<t0> file will be copied in C<wr_root/test-t0/etc/fstab>.
     {
      name => 't1',
      # add optional specification here for t1 test
-     },
+    },
  );
 
  1; # to keep Perl happy
 
 You can suppress warnings by specifying C<< no_warnings => 1 >>. On
-the other hand, you may also want to check for warnings specifid to
+the other hand, you may also want to check for warnings specified to
 your model. In this case, you should avoid specifying C<no_warnings>
-here and use the more specify warning tests or warning filters
-mentioned below.
+here and specify warning tests or warning filters as mentioned below.
 
 See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
 
@@ -699,22 +703,16 @@ See actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master
 =head2 Test scenario
 
 Each subtest follow a sequence explained below. Each step of this
-sequence may be altered by adding specification in the test case:
+sequence may be altered by adding specification in
+C<< <model-to-test>-test-conf.pl >>:
 
 =over
 
 =item *
 
 Setup test in C<< wr_root/<subtest name>/ >>. If your configuration file layout depend
-on the target system, you will have to specify the path using C<setup> parameter:
-
- setup => {
-    'file_name_in_examples_dir' => {
-        'darwin' => '/etc/foo', # macosx
-        'default' => '/etc/bar' # others
-    },
-    'another_file_in_examples_dir' => $computed_path
- }
+on the target system, you will have to specify the path using C<setup> parameter.
+See L</"Test file layout depending on system">.
 
 =item *
 
@@ -728,7 +726,7 @@ E.g.
 
     load_warnings => [ qr/Missing/, (qr/deprecated/) x 3 , ],
 
-Use an empty array_ref to masks load warnings.
+Use an empty array_ref to mask load warnings.
 
 =item *
 
@@ -746,6 +744,8 @@ Optionally load configuration data. You should design this config data to
 suppress any error or warning mentioned above. E.g:
 
     load => 'binary:seaview Synopsis="multiplatform interface for sequence alignment"',
+
+See L<Config::Model::Loader> for the syntax of the string accepted by C<load> parameter.
 
 =item *
 
@@ -779,29 +779,32 @@ You can tolerate any dump warning this way:
 Run specific content check to verify that configuration data was retrieved
 correctly:
 
-    check => [
+    check => {
         'fs:/proc fs_spec',           "proc" ,
         'fs:/proc fs_file',           "/proc" ,
         'fs:/home fs_file',          "/home",
-    ],
+    },
+
+The keys of the hash points to the value to be checked using the
+syntax described in L<Config::Model::AnyThing:/"grab(...)">.
 
 You can run check using different check modes (See L<Config::Model::Value/"fetch( ... )">)
 by passing a hash ref instead of a scalar :
 
-    check  => [
-        'sections:debian packages:0' , { qw/mode layered value dpkg-dev/},
-        'sections:base packages:0',    { qw/mode layered value gcc-4.2-base/},
-    ],
+    check  => {
+        'sections:debian packages:0' , { mode => 'layered', value => 'dpkg-dev' },
+        'sections:base packages:0',    { mode => 'layered', value => "gcc-4.2-base' },
+    },
 
 The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
 and L<fetch|Config::Model::Value/"fetch( ... )">
 
 A regexp can also be used to check value:
 
-   check => [
+   check => {
       "License text" => qr/gnu/i,
       "License text" => { mode => 'custom', value => qr/gnu/i },
-   ]
+   }
 
 =item *
 
@@ -899,9 +902,9 @@ configuration data was written and retrieved correctly:
 
 
     wr_check => {
-        'fs:/proc fs_spec',           "proc" ,
-        'fs:/proc fs_file',           "/proc" ,
-        'fs:/home fs_file',          "/home",
+        'fs:/proc fs_spec' =>          "proc" ,
+        'fs:/proc fs_file' =>          "/proc",
+        'fs:/home fs_file' =>          "/home",
     },
 
 Like the C<check> item explained above, you can run C<wr_check> using
@@ -909,11 +912,12 @@ different check modes.
 
 =back
 
-=head2 running the test
+=head2 Running the test
 
-Run all tests:
+Run all tests with one of these commands:
 
- prove -l t/model_test.t
+ prove -l t/model_test.t :: [ t|l|e [ <model_name> [ <regexp> ]]]
+ perl -Ilib t/model_test.t  [ t|l|e [ <model_name> [ <regexp> ]]]
 
 By default, all tests are run on all models.
 
