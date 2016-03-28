@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+2.053 2016-03-28
+
+  New features:
+    * pass application when creating instance
+    * use config_dir specified in app info file
+
+  Improvements:
+    * Report error with model specification
+    * Improved doc
+
 2.052 2015-10-17
 
   * New features:
