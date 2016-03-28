@@ -37,7 +37,7 @@ require Exporter;
 $File::Copy::Recursive::DirPerms = 0755;
 
 sub setup_test {
-    my ( $model_test, $t_name, $wr_root, $trace, $setup ) = @_;
+    my ( $app_to_test, $t_name, $wr_root, $trace, $setup ) = @_;
 
     # cleanup before tests
     $wr_root->remove_tree();
@@ -49,7 +49,7 @@ sub setup_test {
     $conf_file = $wr_dir->child($conf_dir,$conf_file_name)
         if $conf_dir and $conf_file_name;
 
-    my $ex_dir = path('t')->child('model_tests.d', "$model_test-examples");
+    my $ex_dir = path('t')->child('model_tests.d', "$app_to_test-examples");
     my $ex_data = $ex_dir->child($t_name);
 
     my @file_list;
@@ -61,7 +61,7 @@ sub setup_test {
                 = ref ($map) eq 'HASH' ? $map->{$^O} // $map->{default}
                 :                        $map;
             if (not defined $destination_str) {
-                die "$model_test $t_name setup error: cannot find destination for test file $file" ;
+                die "$app_to_test $t_name setup error: cannot find destination for test file $file" ;
             }
             my $destination = $wr_dir->child($destination_str) ;
             $destination->parent->mkpath( { mode => 0755 }) ;
@@ -90,7 +90,7 @@ sub setup_test {
     else {
         note ('starting test without original config data, i.e. from scratch');
     }
-    ok( 1, "Copied $model_test example $t_name" );
+    ok( 1, "Copied $app_to_test example $t_name" );
 
     return ( $wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list );
 }
@@ -173,7 +173,7 @@ sub apply_fix {
 }
 
 sub dump_tree_full_mode {
-    my ($model_test, $root, $t, $trace) = @_;
+    my ($app_to_test, $root, $t, $trace) = @_;
 
     print "dumping tree ...\n" if $trace;
     my $dump  = '';
@@ -186,7 +186,7 @@ sub dump_tree_full_mode {
         my @tf = @{ $t->{dump_errors} };
         while (@tf) {
             my $qr = shift @tf;
-            throws_ok { &$risky } $qr, "Failed dump $nb of $model_test config tree";
+            throws_ok { &$risky } $qr, "Failed dump $nb of $app_to_test config tree";
             my $fix = shift @tf;
             $root->load($fix);
             ok( 1, "Fixed error nb " . $nb++ );
@@ -201,7 +201,7 @@ sub dump_tree_full_mode {
     else {
         warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
     }
-    ok( $dump, "Dumped $model_test config tree in full mode" );
+    ok( $dump, "Dumped $app_to_test config tree in full mode" );
 
     print $dump if $trace;
     return $dump;
@@ -300,10 +300,10 @@ sub _test_key {
 }
 
 sub write_data_back {
-    my ($model_test, $inst, $t) = @_;
+    my ($app_to_test, $inst, $t) = @_;
     local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
     $inst->write_back( force => 1 );
-    ok( 1, "$model_test write back done" );
+    ok( 1, "$app_to_test write back done" );
 }
 
 sub check_file_content {
@@ -354,7 +354,7 @@ sub check_added_or_removed_files {
 }
 
 sub create_second_instance {
-    my ($model_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override) = @_;
+    my ($app_to_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override) = @_;
 
     # create another instance to read the conf file that was just written
     dircopy( $wr_dir->stringify, $wr_dir2->stringify )
@@ -364,12 +364,12 @@ sub create_second_instance {
         root_class_name => $model_to_test,
         root_dir        => $wr_dir2->stringify,
         config_file     => $t->{config_file} ,
-        instance_name   => "$model_test-$t_name-w",
+        instance_name   => "$app_to_test-$t_name-w",
         check           => $t->{load_check2} || 'yes',
         config_dir      => $config_dir_override,
     );
 
-    ok( $i2_test, "Created instance $model_test-test-$t_name-w" );
+    ok( $i2_test, "Created instance $app_to_test-test-$t_name-w" );
 
     local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
     my $i2_root = $i2_test->config_root;
@@ -379,23 +379,23 @@ sub create_second_instance {
 }
 
 sub run_model_test {
-    my ($model_test, $model_test_conf, $do, $model, $trace, $wr_root) = @_ ;
+    my ($app_to_test, $app_to_test_conf, $do, $model, $trace, $wr_root) = @_ ;
 
     $skip = 0;
     undef $conf_file_name ;
     undef $conf_dir ;
     undef $home_for_test ;
 
-    note("Beginning $model_test test ($model_test_conf)");
+    note("Beginning $app_to_test test ($app_to_test_conf)");
 
-    unless ( my $return = do $model_test_conf ) {
-        warn "couldn't parse $model_test_conf: $@" if $@;
-        warn "couldn't do $model_test_conf: $!" unless defined $return;
-        warn "couldn't run $model_test_conf" unless $return;
+    unless ( my $return = do $app_to_test_conf ) {
+        warn "couldn't parse $app_to_test_conf: $@" if $@;
+        warn "couldn't do $app_to_test_conf: $!" unless defined $return;
+        warn "couldn't run $app_to_test_conf" unless $return;
     }
 
     if ($skip) {
-        note("Skipped $model_test test ($model_test_conf)");
+        note("Skipped $app_to_test test ($app_to_test_conf)");
         return;
     }
 
@@ -405,18 +405,18 @@ sub run_model_test {
     Config::Model::BackendMgr::_set_test_home($home_for_test) ;
 
     if (not defined $model_to_test) {
-        $model_to_test = $applications->{$model_test};
+        $model_to_test = $applications->{$app_to_test};
         if (not defined $model_to_test) {
             my @k = sort values %$applications;
             my @files = map { $_->{_file} // 'unknown' } values %$appli_info ;
-            die "Cannot find model name for $model_test in files >@files<. Know dev models are >@k<. ".
+            die "Cannot find model name for $app_to_test in files >@files<. Know dev models are >@k<. ".
                 "Check your test name (the file ending with -test-conf.pl) or set the \$model_to_test global variable\n";
         }
     }
 
-    my $config_dir_override = $appli_info->{$model_test}{config_dir}; # may be undef
+    my $config_dir_override = $appli_info->{$app_to_test}{config_dir}; # may be undef
 
-    my $note ="$model_test uses $model_to_test model";
+    my $note ="$app_to_test uses $model_to_test model";
     $note .= " on file $conf_file_name" if defined $conf_file_name;
     note($note);
 
@@ -427,17 +427,17 @@ sub run_model_test {
             $idx++;
             next;
         }
-        note("Beginning subtest $model_test $t_name");
+        note("Beginning subtest $app_to_test $t_name");
 
         my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
-            = setup_test ($model_test, $t_name, $wr_root,$trace, $t->{setup});
+            = setup_test ($app_to_test, $t_name, $wr_root,$trace, $t->{setup});
 
         write_config_file($conf_dir,$wr_dir,$t);
 
         my $inst = $model->instance(
             root_class_name => $model_to_test,
             root_dir        => $wr_dir->stringify,
-            instance_name   => "$model_test-" . $t_name,
+            instance_name   => "$app_to_test-" . $t_name,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
             config_dir      => $config_dir_override,
@@ -453,9 +453,9 @@ sub run_model_test {
 
         apply_fix($inst) if  $t->{apply_fix};
 
-        dump_tree_full_mode ($model_test, $root, $t, $trace) ;
+        dump_tree_full_mode ($app_to_test, $root, $t, $trace) ;
 
-        my $dump = dump_tree_custom_mode ($model_test, $root, $t, $trace) ;
+        my $dump = dump_tree_custom_mode ($app_to_test, $root, $t, $trace) ;
 
         check_data("first", $root, $t->{check}, $t->{no_warnings}) if $t->{check};
 
@@ -464,39 +464,39 @@ sub run_model_test {
 
         check_annotation($root,$t) if $t->{verify_annotation};
 
-        write_data_back ($model_test, $inst, $t) ;
+        write_data_back ($app_to_test, $inst, $t) ;
 
         check_file_content($wr_dir,$t) ;
 
         check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
-        my $i2_root = create_second_instance ($model_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
+        my $i2_root = create_second_instance ($app_to_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
 
-        my $p2_dump = dump_tree_custom_mode("second $model_test", $i2_root, $t) ;
+        my $p2_dump = dump_tree_custom_mode("second $app_to_test", $i2_root, $t) ;
 
         unified_diff;
         eq_or_diff(
             [ split /\n/,$p2_dump ],
             [ split /\n/,$dump ],
-            "compare original $model_test custom data with 2nd instance custom data",
+            "compare original $app_to_test custom data with 2nd instance custom data",
         );
 
         ok( -s "$wr_dir2/$conf_dir/$conf_file_name" ,
-            "check that original $model_test file was not clobbered" )
+            "check that original $app_to_test file was not clobbered" )
                 if defined $conf_file_name ;
 
         check_data("second", $i2_root, $t->{wr_check}, $t->{no_warnings}) if $t->{wr_check} ;
 
-        note("End of subtest $model_test $t_name");
+        note("End of subtest $app_to_test $t_name");
 
         $idx++;
     }
-    note("End of $model_test test");
+    note("End of $app_to_test test");
 
 }
 
 sub run_tests {
-    my ( $arg, $test_only_model, $do ) = @_;
+    my ( $arg, $test_only_app, $do ) = @_;
 
     my $log = 0;
 
@@ -527,10 +527,10 @@ sub run_tests {
 
     my @group_of_tests = grep { /-test-conf.pl$/ } glob("t/model_tests.d/*");
 
-    foreach my $model_test_conf (@group_of_tests) {
-        my ($model_test) = ( $model_test_conf =~ m!\.d/([\w\-]+)-test-conf! );
-        next if ( $test_only_model and $test_only_model ne $model_test ) ;
-        run_model_test($model_test, $model_test_conf, $do, $model, $trace, $wr_root) ;
+    foreach my $app_to_test_conf (@group_of_tests) {
+        my ($app_to_test) = ( $app_to_test_conf =~ m!\.d/([\w\-]+)-test-conf! );
+        next if ( $test_only_app and $test_only_app ne $app_to_test ) ;
+        run_model_test($app_to_test, $app_to_test_conf, $do, $model, $trace, $wr_root) ;
     }
 
     memory_cycle_ok($model,"test memory cycle") ;
@@ -550,10 +550,10 @@ sub run_tests {
  use ExtUtils::testlib;
 
  my $arg = shift || ''; # typically e t l
- my $test_only_model = shift || ''; # only run one set of test
+ my $test_only_app = shift || ''; # only run one set of test
  my $do = shift ; # select subtests to run with a regexp
 
- run_tests($arg, $test_only_model, $do) ;
+ run_tests($arg, $test_only_app, $do) ;
 
 =head1 DESCRIPTION
 
