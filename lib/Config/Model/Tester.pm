@@ -43,6 +43,8 @@ sub setup_test {
     $wr_root->remove_tree();
     $wr_root->mkpath( { mode => 0755 } );
 
+    $conf_dir =~ s!~/!$home_for_test/!;
+
     my $wr_dir    = $wr_root->child('test-' . $t_name);
     my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
     my $conf_file ;
@@ -63,6 +65,7 @@ sub setup_test {
             if (not defined $destination_str) {
                 die "$app_to_test $t_name setup error: cannot find destination for test file $file" ;
             }
+            $destination_str =~ s!~/!$home_for_test/!;
             my $destination = $wr_dir->child($destination_str) ;
             $destination->parent->mkpath( { mode => 0755 }) ;
             my $data = $ex_data->child($file)->slurp() ;
