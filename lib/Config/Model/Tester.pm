@@ -350,8 +350,12 @@ sub check_added_or_removed_files {
     my ( $conf_dir, $wr_dir, $t, @file_list) = @_;
 
     # copy whole dir
-    my $debian_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
-    my @new_file_list = list_test_files($debian_dir) ;
+    my $destination_dir
+        = $t->{setup} ? $wr_dir
+        : $conf_dir   ? $wr_dir->child($conf_dir)
+        :               $wr_dir ;
+    say "test dir $destination_dir";
+    my @new_file_list = list_test_files($destination_dir) ;
     $t->{file_check_sub}->( \@file_list ) if defined $t->{file_check_sub};
     eq_or_diff( \@new_file_list, [ sort @file_list ], "check added or removed files" );
 }
