@@ -574,38 +574,50 @@ A specific layout for test files must be followed.
 
 =head2 Simple test file layout
 
+Each test case is represented by a configuration file (not
+a directory) in the C<*-examples> directory. This configuration file
+will be used by the model to test and is copied as
+C<$confdir/$conf_file_name> using the global variables explained
+below.
+
+In the example below, we have 1 app model to test: C<lcdproc> and 2 tests
+cases. The app name matches the file specified in
+C<lib/Config/Model/*.d> directory. In this case, the app name matches
+C<lib/Config/Model/system.d/lcdproc>
+
  t
  |-- model_test.t
  \-- model_tests.d           # do not change directory name
-     |-- lcdd-test-conf.pl   # test specification for lcdd model
-     \-- lcdd-examples
+     |-- lcdproc-test-conf.pl   # test specification for lcdproc app
+     \-- lcdproc-examples
          |-- t0              # subtest t0
          \-- LCDD-0.5.5      # subtest for older LCDproc
 
-In the example above, we have 1 model to test: C<lcdd> and 2 tests
-cases. The model name matches the file specified in
-C<lib/Config/Model/*.d> directory. In this case, the model name matches 
-C<lib/Config/Model/system.d/lcdproc>
+Test specification is written in C<lcdproc-test-conf.pl> file (i.e. this
+modules looks for files named  like C<< <app-name>-test-conf.pl> >>).
 
-Test specification is written in C<lcdd-test-conf.pl> file (i.e. this
-modules looks for files named  like C<< <model-name>-test-conf.pl> >>).
-
-Subtests are specified in files in directory C<lcdd-examples> (
-i.e. this modules looks for subtests in directory 
-C<< <model-name>-examples.pl> >>. C<lcdd-test-conf.pl> contains
+Subtests are specified in files in directory C<lcdproc-examples> (
+i.e. this modules looks for subtests in directory
+C<< <model-name>-examples.pl> >>. C<lcdproc-test-conf.pl> contains
 instructions so that each file will be used as a C</etc/LCDd.conf>
 file during each test case.
 
-C<lcdd-test-conf.pl> can contain specifications for more test
-case. Each test case will require a new file in C<lcdd-examples>
+C<lcdproc-test-conf.pl> can contain specifications for more test
+cases. Each test case will require a new file in C<lcdproc-examples>
 directory.
 
 See L</Examples> for a link to the actual LCDproc model tests
 
 =head2 Test file layout for multi-file configuration
 
-When a configuration is spread over several files, test examples must be
-provided in sub-directories:
+When a configuration is spread over several files, each test case is
+provided in a sub-directory. This sub-directory is copied in
+C<$conf_dir> (a global variable as explained below)
+
+In the example below, the test specification is written in
+C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
+C<dpkg-test-conf.pl> will contain instructions so that each directory
+under C<dpkg-examples> will be used.
 
  t/model_tests.d
  \-- dpkg-test-conf.pl         # test specification
@@ -621,14 +633,23 @@ provided in sub-directories:
              |   \-- format
              \-- watch
 
-In the example above, the test specification is written in
-C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
-C<dpkg-test-conf.pl> will contain instructions so that each directory
-under C<dpkg-examples> will be used.
 
 See L</Examples> for a link to the (many) Dpkg model tests
 
-=head2 Test file layout depending on system
+=head2 More complex file layout
+
+Each test case is a sub-directory on the C<*-examples> directory and
+contains several files. The destination of the test files may depend
+on the system (e.g. the OS). For instance, system wide C<ssh_config>
+is stored in C</etc/ssh> on Linux, and directly in C</etc> on MacOS.
+
+These files are copied in a test directory using a C<setup> parameter:
+
+  setup => {
+    test_file_in_example_dir => 'destination'
+  }
+
+Let's consider this example of 2 tests cases for ssh:
 
  t/model_tests.d/
  |-- ssh-test-conf.pl
@@ -637,24 +658,33 @@ See L</Examples> for a link to the (many) Dpkg model tests
          |-- system_ssh_config
          \-- user_ssh_config
 
-In this example, the layout of the configuration files depend on the
-system. For instance, system wide C<ssh_config> is stored in C</etc/ssh> on
-Linux, and directly in C</etc> on MacOS.
 
-L<ssh-test-conf.pl|https://github.com/dod38fr/config-model-openssh/blob/master/t/model_tests.d/ssh-test-conf.pl>
-will specify the target path of each file. I.e.:
+Unfortunately, C<user_ssh_config> is a user file, so you specify where
+the home directory for the tests with another global variable:
 
- $home_for_test = $^O eq 'darwin' ? '/Users/joe'
-                :                   '/home/joe' ;
+  $home_for_test = '/home/joe' ;
 
- # ...
+For Linux only, the C<setup> parameter is:
+
+ setup => {
+   'system_ssh_config' => '/etc/ssh/ssh_config',
+   'user_ssh_config'   => "~/.ssh/config"
+ }
+
+On the other hand, system wide config file is different on MacOS and
+the test file must be copied in the correct location. When the value
+of the C<setup> hash is another hash, the key of this other hash is
+used as to specify the target location for other OS (as returned by
+Perl C<$^O> variable:
 
       setup => {
         'system_ssh_config' => {
             'darwin' => '/etc/ssh_config',
             'default' => '/etc/ssh/ssh_config',
         },
-        'user_ssh_config' => "$home_for_test/.ssh/config"
+        'user_ssh_config' => "~/.ssh/config"
+      }
+
 
 See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-model-openssh/tree/master/t/model_tests.d>
 
@@ -698,10 +728,12 @@ here and specify warning tests or warning filters as mentioned below.
 
 See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
 
-=head2 Internal tests
+=head2 Internal tests or backend tests
 
 Some tests will require the creation of a configuration class dedicated
-for test. This test class can be created directly in the test specification
+for test (typically to test corner cases on a backend).
+
+This test class can be created directly in the test specification
 by calling L<create_config_class|Config::Model/create_config_class> on
 C<$model> variable. See for instance the
 L<layer test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/layer-test-conf.pl>
@@ -898,7 +930,7 @@ specify a subref to alter the file list:
         my $list_ref = shift ;
         # file added during tests
         push @$list_ref, "/debian/source/format" ;
-    };
+    },
 
 =item *
 
