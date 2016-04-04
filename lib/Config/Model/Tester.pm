@@ -72,13 +72,13 @@ sub setup_test {
     }
     elsif ( $ex_data->is_dir ) {
         # copy whole dir
-        my $debian_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
-        $debian_dir->mkpath( { mode => 0755 });
-        say "dircopy ". $ex_data->stringify . '->'. $debian_dir->stringify
+        my $destination_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
+        $destination_dir->mkpath( { mode => 0755 });
+        say "dircopy ". $ex_data->stringify . '->'. $destination_dir->stringify
             if $trace ;
-        dircopy( $ex_data->stringify, $debian_dir->stringify )
-          || die "dircopy $ex_data -> $debian_dir failed:$!";
-        @file_list = list_test_files ($debian_dir);
+        dircopy( $ex_data->stringify, $destination_dir->stringify )
+          || die "dircopy $ex_data -> $destination_dir failed:$!";
+        @file_list = list_test_files ($destination_dir);
     }
     elsif ( $ex_data->exists ) {
         # just copy file
