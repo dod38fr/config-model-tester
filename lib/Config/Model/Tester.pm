@@ -68,7 +68,9 @@ sub setup_test {
             $destination_str =~ s!~/!$home_for_test/!;
             my $destination = $wr_dir->child($destination_str) ;
             $destination->parent->mkpath( { mode => 0755 }) ;
-            my $data = $ex_data->child($file)->slurp() ;
+            my $data_file = $ex_data->child($file);
+            die "cannot find $data_file" unless $data_file->exists;
+            my $data = $data_file->slurp() ;
             $destination->spew( $data );
             @file_list = list_test_files ($wr_dir);
         }
@@ -84,6 +86,10 @@ sub setup_test {
         @file_list = list_test_files ($destination_dir);
     }
     elsif ( $ex_data->exists ) {
+        # either one if true if $conf_file is undef
+        die "test data is missing \$conf_dir" unless defined $conf_dir;
+        die "test data is missing \$conf_file" unless defined $conf_file;
+
         # just copy file
         say "file copy ". $ex_data->stringify . '->'. $conf_file->stringify
             if $trace ;
