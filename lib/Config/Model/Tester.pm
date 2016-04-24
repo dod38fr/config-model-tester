@@ -43,7 +43,7 @@ sub setup_test {
     $wr_root->remove_tree();
     $wr_root->mkpath( { mode => 0755 } );
 
-    $conf_dir =~ s!~/!$home_for_test/!;
+    $conf_dir =~ s!~/!$home_for_test/! if $conf_dir;
 
     my $wr_dir    = $wr_root->child('test-' . $t_name);
     my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
