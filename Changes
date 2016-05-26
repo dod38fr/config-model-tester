@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+2.055 2016-05-26
+
+  Minor bug fixes:
+  * removed debug print
+  * avoid undef warning
+
 2.054 2016-04-17
 
   Improvements:
