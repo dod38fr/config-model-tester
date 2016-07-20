@@ -181,13 +181,13 @@ sub apply_fix {
     ok( 1, "apply_fixes called" );
 }
 
-sub dump_tree_full_mode {
-    my ($app_to_test, $root, $t, $trace) = @_;
+sub dump_tree {
+    my ($app_to_test, $root, $mode, $no_warnings, $t, $trace) = @_;
 
     print "dumping tree ...\n" if $trace;
     my $dump  = '';
     my $risky = sub {
-        $dump = $root->dump_tree( mode => 'full' );
+        $dump = $root->dump_tree( mode => $mode );
     };
 
     if ( defined $t->{dump_errors} ) {
@@ -202,7 +202,7 @@ sub dump_tree_full_mode {
         }
     }
 
-    if ( ($t->{no_warnings} or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
+    if ( ($no_warnings or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
         local $Config::Model::Value::nowarning = 1;
         &$risky;
         ok( 1, "Ran dump_tree (no warning check)" );
@@ -210,7 +210,7 @@ sub dump_tree_full_mode {
     else {
         warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
     }
-    ok( $dump, "Dumped $app_to_test config tree in full mode" );
+    ok( $dump, "Dumped $app_to_test config tree in $mode mode" );
 
     print $dump if $trace;
     return $dump;
@@ -435,6 +435,7 @@ sub run_model_test {
 
     my $idx = 0;
     foreach my $t (@tests) {
+        translate_test_data($t);
         my $t_name = $t->{name} || "t$idx";
         if ( defined $do and $t_name !~ /$do/) {
             $idx++;
@@ -467,7 +468,7 @@ sub run_model_test {
 
         apply_fix($inst) if  $t->{apply_fix};
 
-        dump_tree_full_mode ($app_to_test, $root, $t, $trace) ;
+        dump_tree ($app_to_test, $root, 'full', $t->{no_warnings}, $t->{full_dump}, $trace) ;
 
         my $dump = dump_tree_custom_mode ($app_to_test, $root, $t, $trace) ;
 
@@ -507,6 +508,11 @@ sub run_model_test {
     }
     note("End of $app_to_test test");
 
+}
+
+sub translate_test_data {
+    my $t = shift;
+    map {$t->{full_dump}{$_} = delete $t->{$_} if $t->{$_}; } qw/dump_warnings dump_errors/;
 }
 
 sub run_tests {
