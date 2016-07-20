@@ -825,23 +825,31 @@ Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 =item *
 
 Call L<dump_tree|Config::Model::Node/dump_tree ( ... )> to check the validity of the
-data. Use C<dump_errors> if you expect issues:
+data after optional C<apply_fix>. This step is not optional.
 
+Use C<dump_errors> if you expect issues:
+
+  full_dump => {
     dump_errors =>  [
         # the issues     the fix that will be applied
         qr/mandatory/ => 'Files:"*" Copyright:0="(c) foobar"',
         qr/mandatory/ => ' License:FOO text="foo bar" ! Files:"*" License short_name="FOO" '
     ],
-
-=item *
+  }
 
 Likewise, specify any expected warnings (note the list must contain only C<qr> stuff):
 
+  full_dump => {
         dump_warnings => [ (qr/deprecated/) x 3 ],
+  }
 
 You can tolerate any dump warning this way:
 
+  full_dump => {
         dump_warnings => undef ,
+  }
+
+Both C<dump_warnings> and C<dump_errors> can be specified in C<full_dump> hash.
 
 =item *
 
