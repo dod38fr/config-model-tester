@@ -216,18 +216,6 @@ sub dump_tree {
     return $dump;
 }
 
-# TODO: factorise with function above and create parameters to
-# handle warnings in both cases with warnings_like
-sub dump_tree_custom_mode {
-    my ($label, $root, $t, $trace) = @_;
-
-    local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
-
-    my $dump = $root->dump_tree();
-    ok( $dump, "Dumped $label config tree in custom mode" );
-    return $dump;
-}
-
 sub check_data {
     my ($label, $root, $c, $nw) = @_;
 
@@ -470,7 +458,7 @@ sub run_model_test {
 
         dump_tree ($app_to_test, $root, 'full', $t->{no_warnings}, $t->{full_dump}, $trace) ;
 
-        my $dump = dump_tree_custom_mode ($app_to_test, $root, $t, $trace) ;
+        my $dump = dump_tree ($app_to_test, $root, 'custom', $t->{no_warnings}, {}, $trace) ;
 
         check_data("first", $root, $t->{check}, $t->{no_warnings}) if $t->{check};
 
@@ -487,7 +475,7 @@ sub run_model_test {
 
         my $i2_root = create_second_instance ($app_to_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
 
-        my $p2_dump = dump_tree_custom_mode("second $app_to_test", $i2_root, $t) ;
+        my $p2_dump = dump_tree("second $app_to_test", $i2_root, 'custom', $t->{no_warnings},{}) ;
 
         unified_diff;
         eq_or_diff(
