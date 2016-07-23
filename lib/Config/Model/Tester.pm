@@ -454,6 +454,9 @@ sub run_model_test {
 
         load_instructions ($root,$t,$trace) if $t->{load} ;
 
+        dump_tree ('before fix '.$app_to_test , $root, 'full', $t->{no_warnings}, $t->{check_before_fix}, $trace)
+            if $t->{check_before_fix};
+
         apply_fix($inst) if  $t->{apply_fix};
 
         dump_tree ($app_to_test, $root, 'full', $t->{no_warnings}, $t->{full_dump}, $trace) ;
@@ -806,6 +809,41 @@ See L<Config::Model::Loader> for the syntax of the string accepted by C<load> pa
 
 =item *
 
+Optionally, run a check before running apply_fix (if any). This step is useful to check
+warning messages:
+
+   check_before_fix => {
+      dump_errors   => [ ... ] # optional, see below
+      dump_warnings => [ ... ] # optional, see below
+   }
+
+Use C<dump_errors> if you expect issues:
+
+  check_before_fix => {
+    dump_errors =>  [
+        # the issues  and a way to fix the issue using Config::Model::Node::load
+        qr/mandatory/ => 'Files:"*" Copyright:0="(c) foobar"',
+        qr/mandatory/ => ' License:FOO text="foo bar" ! Files:"*" License short_name="FOO" '
+    ],
+  }
+
+Likewise, specify any expected warnings (note the list must contain
+only ref to regular expressions):
+
+  check_before_fix => {
+        dump_warnings => [ (qr/deprecated/) x 3 ],
+  }
+
+You can tolerate any dump warning this way:
+
+  check_before_fix => {
+        dump_warnings => undef ,
+  }
+
+Both C<dump_warnings> and C<dump_errors> can be specified in C<check_before_fix> hash.
+
+=item *
+
 Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 
     apply_fix => 1,
@@ -815,29 +853,7 @@ Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 Call L<dump_tree|Config::Model::Node/dump_tree ( ... )> to check the validity of the
 data after optional C<apply_fix>. This step is not optional.
 
-Use C<dump_errors> if you expect issues:
-
-  full_dump => {
-    dump_errors =>  [
-        # the issues     the fix that will be applied
-        qr/mandatory/ => 'Files:"*" Copyright:0="(c) foobar"',
-        qr/mandatory/ => ' License:FOO text="foo bar" ! Files:"*" License short_name="FOO" '
-    ],
-  }
-
-Likewise, specify any expected warnings (note the list must contain only C<qr> stuff):
-
-  full_dump => {
-        dump_warnings => [ (qr/deprecated/) x 3 ],
-  }
-
-You can tolerate any dump warning this way:
-
-  full_dump => {
-        dump_warnings => undef ,
-  }
-
-Both C<dump_warnings> and C<dump_errors> can be specified in C<full_dump> hash.
+As with C<check_before_fix>, both C<dump_errors> or C<dump_warnings> can be used.
 
 =item *
 
