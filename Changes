@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+2.056 2016-09-01
+
+  Improvements:
+    * added an option to check config tree content
+      before calling apply_fix
+    * Changed syntax of dump check parameters (old syntax is
+      still accepted)
+
 2.055 2016-05-26
 
   Minor bug fixes:
