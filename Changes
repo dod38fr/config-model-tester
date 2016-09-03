@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+2.057 2016-09-03
+
+  Bug fix for Perl 5.24 and Debian perl 5.22.2-4:
+  * load test file even if @INC does not contain '.'
+
 2.056 2016-09-01
 
   Improvements:
