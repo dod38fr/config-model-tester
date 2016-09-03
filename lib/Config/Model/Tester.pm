@@ -389,7 +389,7 @@ sub run_model_test {
 
     note("Beginning $app_to_test test ($app_to_test_conf)");
 
-    unless ( my $return = do $app_to_test_conf ) {
+    unless ( my $return = do "./$app_to_test_conf" ) {
         warn "couldn't parse $app_to_test_conf: $@" if $@;
         warn "couldn't do $app_to_test_conf: $!" unless defined $return;
         warn "couldn't run $app_to_test_conf" unless $return;
