@@ -506,6 +506,17 @@ sub translate_test_data {
     map {$t->{full_dump}{$_} = delete $t->{$_} if $t->{$_}; } qw/dump_warnings dump_errors/;
 }
 
+sub create_model_object {
+    my $new_model ;
+    eval { $new_model = Config::Model->new(); } ;
+    if ($@) {
+        # necessary to run smoke test (no Config::Model to avoid dependency loop)
+        plan skip_all => 'Config::Model is not loaded' ;
+        return;
+    }
+    return $new_model;
+}
+
 sub run_tests {
     my ( $arg, $test_only_app, $do ) = @_;
 
@@ -523,12 +534,6 @@ sub run_tests {
         Log::Log4perl->easy_init( $log ? $WARN : $ERROR );
     }
 
-    eval { $model = Config::Model->new(); } ;
-    if ($@) {
-        plan skip_all => 'Config::Model is not loaded' ;
-        return;
-    }
-
     Config::Model::Exception::Any->Trace(1) if $arg =~ /e/;
 
     ok( 1, "compiled" );
@@ -541,6 +546,8 @@ sub run_tests {
     foreach my $app_to_test_conf (@group_of_tests) {
         my ($app_to_test) = ( $app_to_test_conf =~ m!\.d/([\w\-]+)-test-conf! );
         next if ( $test_only_app and $test_only_app ne $app_to_test ) ;
+        $model = create_model_object();
+        return unless $model;
         run_model_test($app_to_test, $app_to_test_conf, $do, $model, $trace, $wr_root) ;
     }
 
