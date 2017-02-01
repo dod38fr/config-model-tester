@@ -962,6 +962,10 @@ specify a subref to alter the file list:
         push @$list_ref, "/debian/source/format" ;
     },
 
+Note that actual and expected file lists are sorted before check,
+adding a file can be done with C<push>.
+
+
 =item *
 
 Copy all config data from C<< wr_root/<subtest name>/ >>
