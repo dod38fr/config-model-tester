@@ -439,7 +439,7 @@ sub run_model_test {
         my $inst = $model->instance(
             root_class_name => $model_to_test,
             root_dir        => $wr_dir->stringify,
-            instance_name   => "$app_to_test-" . $t_name,
+            instance_name   => "$app_to_test-" . $t_name . '-' . $idx,
             application     => $app_to_test,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
