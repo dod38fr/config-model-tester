@@ -483,6 +483,8 @@ sub run_model_test {
 
         my $i2_root = create_second_instance ($app_to_test, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
 
+        load_instructions ($i2_root,$t->{load2},$trace) if $t->{load2} ;
+
         my $p2_dump = dump_tree("second $app_to_test", $i2_root, 'custom', $t->{no_warnings},{}) ;
 
         unified_diff;
@@ -1010,6 +1012,16 @@ Create another configuration instance to read the conf file that was just copied
 
 You can skip the load check if the written file still contain errors (e.g.
 some errors were ignored and cannot be fixed) with C<< load_check2 => 'no' >>
+
+=item *
+
+Optionally load configuration data in the second instance. You should
+design this config data to suppress any error or warning that occur in
+the step below. E.g:
+
+    load2 => 'binary:seaview',
+
+See L<Config::Model::Loader> for the syntax of the string accepted by C<load2> parameter.
 
 =item *
 
