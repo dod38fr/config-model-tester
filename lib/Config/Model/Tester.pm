@@ -1005,7 +1005,7 @@ the original configuration.
 
 =item *
 
-Create another configuration instance to read the conf file that was just copied
+Create a second configuration instance to read the conf file that was just copied
 (configuration data is checked.)
 
 =item *
