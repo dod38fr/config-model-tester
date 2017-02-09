@@ -167,10 +167,10 @@ sub run_update {
 }
 
 sub load_instructions {
-    my ($root,$t,$trace) = @_ ;
+    my ($root,$steps,$trace) = @_ ;
 
-    print "Loading $t->{load}\n" if $trace ;
-    $root->load( $t->{load} );
+    print "Loading $steps\n" if $trace ;
+    $root->load( $steps );
     ok( 1, "load called" );
 }
 
@@ -457,7 +457,7 @@ sub run_model_test {
 
         run_update($inst,$wr_dir,$t) if $t->{update};
 
-        load_instructions ($root,$t,$trace) if $t->{load} ;
+        load_instructions ($root,$t->{load},$trace) if $t->{load} ;
 
         dump_tree ('before fix '.$app_to_test , $root, 'full', $t->{no_warnings}, $t->{check_before_fix}, $trace)
             if $t->{check_before_fix};
