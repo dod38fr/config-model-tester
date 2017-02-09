@@ -37,7 +37,7 @@ require Exporter;
 $File::Copy::Recursive::DirPerms = 0755;
 
 sub setup_test {
-    my ( $app_to_test, $t_name, $wr_root, $trace, $setup ) = @_;
+    my ( $app_to_test, $t_name, $wr_root, $trace, $t_data ) = @_;
 
     # cleanup before tests
     $wr_root->remove_tree();
@@ -52,11 +52,11 @@ sub setup_test {
         if $conf_dir and $conf_file_name;
 
     my $ex_dir = path('t')->child('model_tests.d', "$app_to_test-examples");
-    my $ex_data = $ex_dir->child($t_name);
+    my $ex_data = $ex_dir->child($t_data->{data_from} // $t_name);
 
     my @file_list;
 
-    if ($setup) {
+    if (my $setup = $t_data->{setup}) {
         foreach my $file (keys %$setup) {
             my $map = $setup->{$file} ;
             my $destination_str
@@ -432,14 +432,19 @@ sub run_model_test {
         note("Beginning subtest $app_to_test $t_name");
 
         my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
-            = setup_test ($app_to_test, $t_name, $wr_root,$trace, $t->{setup});
+            = setup_test ($app_to_test, $t_name, $wr_root,$trace, $t);
 
         write_config_file($conf_dir,$wr_dir,$t);
+
+        my $inst_name = "$app_to_test-" . $t_name;
+
+        die "Duplicated test name $t_name for app $app_to_test\n"
+            if $model->has_instance ($inst_name);
 
         my $inst = $model->instance(
             root_class_name => $model_to_test,
             root_dir        => $wr_dir->stringify,
-            instance_name   => "$app_to_test-" . $t_name . '-' . $idx,
+            instance_name   => $inst_name,
             application     => $app_to_test,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
@@ -751,8 +756,9 @@ L<test for shellvar backend|https://github.com/dod38fr/config-model/blob/master/
 
 =head2 Test specification with arbitrary file names
 
-In some models (e.g. C<Multistrap>, the config file is chosen by the user.
-In this case, the file name must be specified for each tests case:
+In some models like C<Multistrap>, the config file is chosen by the
+user. In this case, the file name must be specified for each tests
+case:
 
  $model_to_test = "Multistrap";
 
@@ -765,7 +771,29 @@ In this case, the file name must be specified for each tests case:
  );
 
 
-See actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
+See the actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
+
+=head2 Re-use test data
+
+When the input data for test is quite complex (several files), it may
+be interested to re-use these data for other tests case. Knowing that
+test name must must unique, you can re-use test data with C<data_from>
+parameter. For instance:
+
+  @tests = (
+    {
+        name  => 'some-test',
+        # ...
+    },
+    {
+        name  => 'some-other-test',
+        data_from  => 'some-test',    # re-use data from test above
+        # ...
+    },
+
+See
+L<plainfile backend test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-plainfile-test-conf.pl>
+for a real life example.
 
 =head2 Test scenario
 
