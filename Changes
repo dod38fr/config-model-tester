@@ -1,5 +1,22 @@
 {{$NEXT}}
 
+2.059 2017-02-12
+
+  Improvements:
+    * allow to reuse test data. Use data_from parameter to re-use test
+      data from another test case
+    * mention that file list is sorted when comparing files written by
+      first and second test instance
+    * add load2 parameter to load configuration data in
+      the second test instance.
+
+  Bug fix
+    * recreate model object for each application test (i.e. a new model
+      object is created for each *-test-conf.pl file)
+
+  Other:
+    * dist.ini: update © year
+
 2.058 2016-12-05
 
   Minor bug fix:
