@@ -303,6 +303,22 @@ sub write_data_back {
     ok( 1, "$app_to_test write back done" );
 }
 
+sub check_file_mode {
+    my ($wr_dir, $t) = @_;
+
+    if (my $fm = $t->{file_mode}) {
+        foreach my $f (keys %$fm) {
+            my $expected_mode = $fm->{$f} ;
+            my $stat = $wr_dir->child($f)->stat;
+            ok($stat ,"stat found file $f");
+            if ($stat) {
+                my $mode = $stat->mode & 07777 ;
+                is($mode, $expected_mode, sprintf("check $f mode (got %o vs %o)",$mode,$expected_mode));
+            }
+        }
+    }
+}
+
 sub check_file_content {
     my ($wr_dir, $t) = @_;
 
@@ -478,6 +494,8 @@ sub run_model_test {
         write_data_back ($app_to_test, $inst, $t) ;
 
         check_file_content($wr_dir,$t) ;
+
+        check_file_mode($wr_dir,$t) ;
 
         check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
@@ -980,6 +998,18 @@ in an array ref:
    file_contents_unlike => {
             "/home/foo/my_arm.conf" => qr/should NOT be there/ ,
    }
+
+=item *
+
+Check the mode of the written files:
+
+  file_mode => {
+     "~/.ssh/ssh_config"     => 0600, # octal mode
+     "debian/stuff.postinst" => 0755,
+  }
+
+Only the last four octets of the mode are tested. I.e. the test is done with
+C< $file_mode & 07777 >
 
 =item *
 
