@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+2.060 2017-03-05
+
+  Improvements:
+  * add file_mode parameter to test permission (mode) of
+    written files
+
 2.059 2017-02-12
 
   Improvements:
