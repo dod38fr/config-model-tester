@@ -156,8 +156,17 @@ sub run_update {
 
     local $Config::Model::Value::nowarning = $args{no_warnings} || $t->{no_warnings} || 0;
 
-    note("updating config with ". join(' ',%args));
-    my $res = $inst->update( from_dir => $dir, %args ) ;
+    my $res ;
+    if (my $uw = delete $args{update_warnings}) {
+        note("updating config with warning check and args: ". join(' ',%args));
+        warnings_like { $res = $inst->update( from_dir => $dir, %args ); } $uw,
+            "Updated configuration with warning check ";
+    }
+    else {
+        note("updating config with no warning check and args: ". join(' ',%args));
+        $res = $inst->update( from_dir => $dir, %args ) ;
+    }
+
     if (defined $ret) {
         is($res,$ret,"updated configuration, got expected return value");
     }
@@ -847,11 +856,40 @@ Use an empty array_ref to mask load warnings.
 
 Optionally run L<update|App::Cme::Command::update> command:
 
-    update => { in => 'some-test-data.txt', returns => 'foo' , no_warnings => [ 0 | 1 ] }
+    update => {
+         [ returns => 'foo' , ]
+         no_warnings => [ 0 | 1 ], # default 0
+         quiet => [ 0 | 1], # default 0, passed to update method
+         update_warnings => [ qr/.../, ]
+ }
 
-C<returns> is the expected return value (optional). All other
-arguments are passed to C<update> method. Note that C<< quiet => 1 >>
-may be useful for less verbose test.
+Where:
+
+=over
+
+=item *
+
+C<returns> is the expected return value (optional).
+
+=item *
+
+C<no_warnings> to suppress the warnings coming from
+L<Config::Model::Value>. Note that C<< no_warnings => 1 >> may be
+useful for less verbose test.
+
+=item *
+
+C<quiet> to suppress progress messages during udpate.
+
+=item *
+
+C<update_warnings> is an array ref of quoted regexp (See qr operator)
+to check the warnings produced during update. use C<< update => [] >>
+to check that no warnings are issued during udpate.
+
+=back
+
+All other arguments are passed to C<update> method.
 
 =item *
 
