@@ -389,6 +389,7 @@ sub create_second_instance {
         root_class_name => $model_to_test,
         root_dir        => $wr_dir2->stringify,
         config_file     => $t->{config_file} ,
+        backend_arg     => $t->{backend_arg} ,
         instance_name   => "$app_to_test-$t_name-w",
         application     => $app_to_test,
         check           => $t->{load_check2} || 'yes',
@@ -472,6 +473,7 @@ sub run_model_test {
             instance_name   => $inst_name,
             application     => $app_to_test,
             config_file     => $t->{config_file} ,
+            backend_arg     => $t->{backend_arg} ,
             check           => $t->{load_check} || 'yes',
             config_dir      => $config_dir_override,
         );
