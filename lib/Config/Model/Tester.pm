@@ -87,8 +87,8 @@ sub setup_test {
     }
     elsif ( $ex_data->exists ) {
         # either one if true if $conf_file is undef
-        die "test data is missing \$conf_dir" unless defined $conf_dir;
-        die "test data is missing \$conf_file" unless defined $conf_file;
+        die "test data is missing global \$conf_dir" unless defined $conf_dir;
+        die "test data is missing global \$conf_file_name" unless defined $conf_file;
 
         # just copy file
         say "file copy ". $ex_data->stringify . '->'. $conf_file->stringify
