@@ -385,15 +385,18 @@ sub create_second_instance {
     dircopy( $wr_dir->stringify, $wr_dir2->stringify )
         or die "can't copy from $wr_dir to $wr_dir2: $!";
 
+    my @options;
+    push @options, backend_arg => $t->{backend_arg} if $t->{backend_arg};
+
     my $i2_test = $model->instance(
         root_class_name => $model_to_test,
         root_dir        => $wr_dir2->stringify,
         config_file     => $t->{config_file} ,
-        backend_arg     => $t->{backend_arg} ,
         instance_name   => "$app_to_test-$t_name-w",
         application     => $app_to_test,
         check           => $t->{load_check2} || 'yes',
         config_dir      => $config_dir_override,
+        @options
     );
 
     ok( $i2_test, "Created instance $app_to_test-test-$t_name-w" );
@@ -467,15 +470,18 @@ sub run_model_test {
         die "Duplicated test name $t_name for app $app_to_test\n"
             if $model->has_instance ($inst_name);
 
+        my @options;
+        push @options, backend_arg => $t->{backend_arg} if $t->{backend_arg};
+
         my $inst = $model->instance(
             root_class_name => $model_to_test,
             root_dir        => $wr_dir->stringify,
             instance_name   => $inst_name,
             application     => $app_to_test,
             config_file     => $t->{config_file} ,
-            backend_arg     => $t->{backend_arg} ,
             check           => $t->{load_check} || 'yes',
             config_dir      => $config_dir_override,
+            @options
         );
 
         my $root = $inst->config_root;
