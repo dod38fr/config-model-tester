@@ -617,6 +617,20 @@ cases per model.
 
 A specific layout for test files must be followed.
 
+=head2 Test specification
+
+Each set of test is defined in a file like:
+
+ t/model_tests.d/<app-name>-test-conf.pl
+
+This file specifies that C<app-name> (which is defined in
+C<lib/Config/Model/*.d> directory) will be used for the test cases
+defined in the C<*-test-conf.pl> file.
+
+This file contains a list of test case (explained below) and expects a
+set of files used as test data. The layout of these test data files is
+explained in next section.
+
 =head2 Simple test file layout
 
 Each test case is represented by a configuration file (not
@@ -641,14 +655,14 @@ C<lib/Config/Model/system.d/lcdproc>
 Test specification is written in C<lcdproc-test-conf.pl> file (i.e. this
 modules looks for files named  like C<< <app-name>-test-conf.pl> >>).
 
-Subtests are specified in files in directory C<lcdproc-examples> (
-i.e. this modules looks for subtests in directory
-C<< <model-name>-examples.pl> >>. C<lcdproc-test-conf.pl> contains
+Subtests data is proviced in files in directory C<lcdproc-examples> (
+i.e. this modules looks for test data in directory
+C<< <model-name>-examples> >>. C<lcdproc-test-conf.pl> contains
 instructions so that each file will be used as a C</etc/LCDd.conf>
 file during each test case.
 
 C<lcdproc-test-conf.pl> can contain specifications for more test
-cases. Each test case will require a new file in C<lcdproc-examples>
+cases. Each test case requires a new file in C<lcdproc-examples>
 directory.
 
 See L</Examples> for a link to the actual LCDproc model tests
@@ -791,6 +805,7 @@ In some models like C<Multistrap>, the config file is chosen by the
 user. In this case, the file name must be specified for each tests
 case:
 
+ # not needed if test file is named multistrap-test-conf.pl
  $model_to_test = "Multistrap";
 
  @tests = (
@@ -803,6 +818,12 @@ case:
 
 
 See the actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
+
+=head2 Backend argument
+
+Some application like systemd requires a backend argument specified by
+User (e.g. a service name for systemd). The parameter C<backend_arg>
+can be specified to emulate this behavior.
 
 =head2 Re-use test data
 
