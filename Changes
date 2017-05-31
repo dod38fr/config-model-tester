@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+2.061 2017-05-31
+
+  Improvements:
+    * add support for backend_arg (for Config::Model 2.104)
+    * add update_warnings parameter
+
 2.060 2017-03-05
 
   Improvements:
