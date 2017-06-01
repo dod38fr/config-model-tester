@@ -913,13 +913,13 @@ useful for less verbose test.
 
 =item *
 
-C<quiet> to suppress progress messages during udpate.
+C<quiet> to suppress progress messages during update.
 
 =item *
 
 C<update_warnings> is an array ref of quoted regexp (See qr operator)
 to check the warnings produced during update. use C<< update => [] >>
-to check that no warnings are issued during udpate.
+to check that no warnings are issued during update.
 
 =back
 
