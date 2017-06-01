@@ -6,7 +6,7 @@ use strict;
 use locale;
 use utf8;
 use 5.10.1;
-
+our $VERSION=3;
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
 use Path::Tiny;
@@ -314,6 +314,11 @@ sub write_data_back {
 
 sub check_file_mode {
     my ($wr_dir, $t) = @_;
+
+    if ($^O eq 'MSWin32' and my $fm = $t->{file_mode}) {
+        note("skipping file mode tests on Windows");
+        return;
+    }
 
     if (my $fm = $t->{file_mode}) {
         foreach my $f (keys %$fm) {
@@ -1077,6 +1082,8 @@ Check the mode of the written files:
 
 Only the last four octets of the mode are tested. I.e. the test is done with
 C< $file_mode & 07777 >
+
+Note: this test is skipped on Windows
 
 =item *
 
