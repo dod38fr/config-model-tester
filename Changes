@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+2.062 2017-06-01
+
+  Bug fix
+    * Skip file mode test on Windows.
+
 2.061 2017-05-31
 
   Improvements:
