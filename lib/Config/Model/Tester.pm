@@ -6,7 +6,7 @@ use strict;
 use locale;
 use utf8;
 use 5.10.1;
-our $VERSION=3;
+
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
 use Path::Tiny;
