@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    * Jump to version 3.001 because I messed up previous release.
+    * fix typos in doc
+
 2.062 2017-06-01
 
   Bug fix
