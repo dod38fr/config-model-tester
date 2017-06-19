@@ -420,6 +420,7 @@ sub run_model_test {
     undef $conf_file_name ;
     undef $conf_dir ;
     undef $home_for_test ;
+    undef $model_to_test ;
 
     note("Beginning $app_to_test test ($app_to_test_conf)");
 
