@@ -799,6 +799,15 @@ here and specify warning tests or warning filters as mentioned below.
 
 See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
 
+=head2 Skip a test
+
+A test file can be skipped using C<$skip> global variable.
+
+In this example, test is skipped when not running on a Debian system:
+
+ eval { require AptPkg::Config; };
+ $skip = ( $@ or not -r '/etc/debian_version' ) ? 1 : 0;
+
 =head2 Internal tests or backend tests
 
 Some tests will require the creation of a configuration class dedicated
