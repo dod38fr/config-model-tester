@@ -479,8 +479,12 @@ sub run_model_test {
         my @options;
         push @options, backend_arg => $t->{backend_arg} if $t->{backend_arg};
 
+        # eventually, we may end up with several instances of Dpkg
+        # model in the same process. So we can't play with chdir
         my $inst = $model->instance(
             root_class_name => $model_to_test,
+            # need to keed root_dir to handle config files like
+            # /etc/foo.ini (absolute path, like in /etc/)
             root_dir        => $wr_dir->stringify,
             instance_name   => $inst_name,
             application     => $app_to_test,
