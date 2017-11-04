@@ -341,7 +341,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach my $subtest (@tests) {
-                file_contents_eq_or_diff $wr_dir->child($f)->stringify,  $subtest,
+                file_contents_eq_or_diff $wr_dir->child($f)->stringify,  $subtest, { encoding => 'UTF-8' },
                     "check that $f contains $subtest";
             }
         }
@@ -352,7 +352,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach my $subtest (@tests) {
-                file_contents_like $wr_dir->child($f)->stringify,  $subtest,
+                file_contents_like $wr_dir->child($f)->stringify,  $subtest, { encoding => 'UTF-8' },
                     "check that $f matches regexp $subtest";
             }
         }
@@ -363,7 +363,7 @@ sub check_file_content {
             my $t = $fc->{$f} ;
             my @tests = ref $t eq 'ARRAY' ? @$t : ($t) ;
             foreach my $subtest (@tests) {
-                file_contents_unlike $wr_dir->child($f)->stringify,  $subtest,
+                file_contents_unlike $wr_dir->child($f)->stringify,  $subtest, { encoding => 'UTF-8' },
                     "check that $f does not match regexp $subtest";
             }
         }
