@@ -47,6 +47,9 @@ sub setup_test {
 
     my $wr_dir    = $wr_root->child('test-' . $t_name);
     my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
+    $wr_dir->mkpath;
+    $wr_dir2->mkpath;
+
     my $conf_file ;
     $conf_file = $wr_dir->child($conf_dir,$conf_file_name)
         if $conf_dir and $conf_file_name;
