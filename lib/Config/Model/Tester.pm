@@ -530,7 +530,7 @@ sub run_model_test {
 
         load_instructions ($i2_root,$t->{load2},$trace) if $t->{load2} ;
 
-        my $p2_dump = dump_tree("second $app_to_test", $i2_root, 'custom', $t->{no_warnings},{}) ;
+        my $p2_dump = dump_tree("second $app_to_test", $i2_root, 'custom', $t->{no_warnings},{}, $trace) ;
 
         unified_diff;
         eq_or_diff(
