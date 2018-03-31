@@ -17,6 +17,10 @@ use Test::Exception;
 use Test::File::Contents ;
 use Test::Differences;
 use Test::Memory::Cycle ;
+use Test::Log::Log4perl;
+
+Test::Log::Log4perl->ignore_priority("info");
+
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
@@ -140,9 +144,14 @@ sub write_config_file {
 sub check_load_warnings {
     my ($root,$t) = @_ ;
 
-    if ( ($t->{no_warnings} or exists $t->{load_warnings}) and not defined $t->{load_warnings}) {
+    if ( my $info = $t->{log4perl_load_warnings} or $::_use_log4perl_to_warn) {
+        my $tw = Test::Log::Log4perl->expect( @{ $info // [] } );
+        $root->init;
+    }
+    elsif ( ($t->{no_warnings} or exists $t->{load_warnings}) and not defined $t->{load_warnings}) {
         local $Config::Model::Value::nowarning = 1;
         $root->init;
+        note("load_warnings param is DEPRECATED. Please use log4perl_load_warnings");
         ok( 1,"Read configuration and created instance with init() method without warning check" );
     }
     else {
@@ -896,7 +905,28 @@ C<< load_check => 'no' >> if your file is not valid.
 
 =item *
 
-Check for config data warning. You should pass the list of expected warnings.
+Check for config data warnings. You should pass the list of expected warnings that are
+emitted through L<Log::Log4Perl>. The array ref is passed as is to the C<expect> function
+of L<Test::Log::Lo4Perl/expect>. E.g:
+
+    log4perl_load_warnings => [
+         [ 'Tree.Node', (warn => qr/deprecated/) x 2 ]  ,
+         [ 'Tree.Element.Value' , ( warn => qr/skipping/) x 2 ]
+    ]
+
+The Log classes are specified in C<cme/Logging>.
+
+Log levels below "warn" are ignored.
+
+L<Config::Model> is currently transitioning from traditional "warn" to
+warn logs. To avoid breaking all tests based on this module, the
+warnings are emitted through L<Log::Log4Perl> only when
+c<$::_use_log4perl_to_warn> is set. This hack will be removed once all
+warnings checks in tests are ported to log4perl checks.
+
+=item *
+
+DEPRECATED. Check for config data warning. You should pass the list of expected warnings.
 E.g.
 
     load_warnings => [ qr/Missing/, (qr/deprecated/) x 3 , ],
