@@ -174,7 +174,7 @@ sub run_update {
         is($res,$ret,"updated configuration, got expected return value");
     }
     else {
-        ok(1,"updated configuration");
+        ok(1,"dumped configuration");
     }
 }
 
