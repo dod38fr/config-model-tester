@@ -229,12 +229,19 @@ sub dump_tree {
         }
     }
 
-    if ( ($no_warnings or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
+    if ( my $info = $t->{log4perl_dump_warnings} or $::_use_log4perl_to_warn) {
+        note("checking logged warning while dumping");
+        my $tw = Test::Log::Log4perl->expect( @{$info // [] } );
+        $risky->();
+    }
+    elsif ( ($no_warnings or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
         local $Config::Model::Value::nowarning = 1;
+        note("dump_warnings parameter is DEPRECATED");
         &$risky;
         ok( 1, "Ran dump_tree (no warning check)" );
     }
     else {
+        note("dump_warnings parameter is DEPRECATED");
         warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
     }
     ok( $dump, "Dumped $app_to_test config tree in $mode mode" );
@@ -1001,7 +1008,7 @@ warning messages:
 
    check_before_fix => {
       dump_errors   => [ ... ] # optional, see below
-      dump_warnings => [ ... ] # optional, see below
+      load4perl_dump_warnings => [ ... ] # optional, see below
    }
 
 Use C<dump_errors> if you expect issues:
@@ -1014,20 +1021,16 @@ Use C<dump_errors> if you expect issues:
     ],
   }
 
-Likewise, specify any expected warnings (note the list must contain
-only ref to regular expressions):
+Likewise, specify any expected warnings:
 
   check_before_fix => {
-        dump_warnings => [ (qr/deprecated/) x 3 ],
+        log4perl_dump_warnings => [ ... ],
   }
 
-You can tolerate any dump warning this way:
+C<log4perl_dump_warnings> passes the array ref content to C<expect>
+function of L<Test::Log::Log4Perl>.
 
-  check_before_fix => {
-        dump_warnings => undef ,
-  }
-
-Both C<dump_warnings> and C<dump_errors> can be specified in C<check_before_fix> hash.
+Both C<log4perl_dump_warnings> and C<dump_errors> can be specified in C<check_before_fix> hash.
 
 =item *
 
