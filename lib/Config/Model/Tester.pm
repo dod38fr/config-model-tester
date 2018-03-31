@@ -169,7 +169,13 @@ sub run_update {
     local $Config::Model::Value::nowarning = $args{no_warnings} || $t->{no_warnings} || 0;
 
     my $res ;
-    if (my $uw = delete $args{update_warnings}) {
+    if ( my $info = $t->{log4perl_update_warnings}) {
+        my $tw = Test::Log::Log4perl->expect( $info );
+        note("updating config with log4perl warning check and args: ". join(' ',%args));
+        $res = $inst->update( from_dir => $dir, %args ) ;
+    }
+    elsif (my $uw = delete $args{update_warnings}) {
+        note("update_warnings param is DEPRECATED. Please use log4perl_update_warnings");
         note("updating config with warning check and args: ". join(' ',%args));
         warnings_like { $res = $inst->update( from_dir => $dir, %args ); } $uw,
             "Updated configuration with warning check ";
@@ -941,7 +947,7 @@ Optionally run L<update|App::Cme::Command::update> command:
          [ returns => 'foo' , ]
          no_warnings => [ 0 | 1 ], # default 0
          quiet => [ 0 | 1], # default 0, passed to update method
-         update_warnings => [ qr/.../, ]
+         loag4perl_update_warnings => [ ... ] # Test::Log::Log4Perl::expect arguments
  }
 
 Where:
@@ -964,7 +970,14 @@ C<quiet> to suppress progress messages during update.
 
 =item *
 
-C<update_warnings> is an array ref of quoted regexp (See qr operator)
+C<log4perl_update_warnings> is used to check the warnings produced
+ during update. The argument is passed to C<expect> function of
+ L<Test::Log::Log4Perl>. See C<load_warnings> parameter above for more
+ details.
+
+=item *
+
+DEPRECATED. C<update_warnings> is an array ref of quoted regexp (See qr operator)
 to check the warnings produced during update. use C<< update => [] >>
 to check that no warnings are issued during update.
 
