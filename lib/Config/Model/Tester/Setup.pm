@@ -86,10 +86,9 @@ be used in most test involving L<Config::Model>.
 Scan test command line options and initialise a L<Config::Model> object.
 
 Returns a list containing a L<Config::Model> object and a
-boolean. This boolean is true if option C<-t> was used.
-''t'.
+boolean. This boolean is true if option C<-t> was used on the command line.
 
-Options are:
+Command options are:
 
 =over
 
