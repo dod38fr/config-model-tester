@@ -10,14 +10,7 @@ use 5.10.1;
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
 use Path::Tiny;
-#use File::Copy::Recursive qw(fcopy rcopy dircopy);
 use Getopt::Std;
-
-#use Test::Warn;
-#use Test::Exception;
-#use Test::File::Contents ;
-#use Test::Differences;
-#use Test::Memory::Cycle ;
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
