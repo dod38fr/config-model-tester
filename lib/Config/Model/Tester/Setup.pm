@@ -32,11 +32,14 @@ sub init_test {
         Config::Model::Exception::Any->Trace(1);
     }
 
-    if (not $opts{l}) {
+    my $model = Config::Model->new( );
+
+    if ($opts{l}) {
+        $model->initialize_log4perl;
+    }
+    else {
         Log::Log4perl->easy_init( $ERROR );
     }
-
-    my $model = Config::Model->new( );
 
     ok( $model, "compiled" );
 
