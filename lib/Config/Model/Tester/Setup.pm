@@ -71,7 +71,7 @@ sub setup_test_dir {
 
  use Config::Model::Tester::Setup qw/init_test setup_test_dir/;
 
- my ($model, $trace) = init_test(shift);
+ my ($model, $trace) = init_test();
 
  # pseudo root where config files are written by config-model as setup
  # by init_test
