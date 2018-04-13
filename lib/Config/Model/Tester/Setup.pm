@@ -92,26 +92,43 @@ be used in most test involving L<Config::Model>.
 
 Scan test command line options and initialise a L<Config::Model> object.
 
-Returns a list containing a L<Config::Model> object and a
-boolean. This boolean is true if option C<-t> was used on the command line.
+Returns a list containing a L<Config::Model> object, a boolean and a
+hash. The boolean is true if option C<--trace> was used on the command
+line.
 
-Command options are:
+Default command options are:
 
 =over
 
 =item *
 
-C<-e>: When set, error handled by L<Config::Model::Exception> shows a
+C<--error>: When set, error handled by L<Config::Model::Exception> shows a
 strack trace when dying.
 
 =item *
 
-C<-l>: When set, L<Log::Log4perl> uses the config from file
+C<--log>: When set, L<Log::Log4perl> uses the config from file
 C<~/.log4config-model> or the default config provided by
 L<Config::Model>. Without 'l', only Error level and above are shown.
 Experimental.
 
 =back
+
+More options can be passed to C<init_test> using option definitions
+like the one defined in L<Getopt::Long> . The value of the command
+line options are returned in the 3rd returned value.
+
+For instance, for a test named C<t/my_test.t> calling :
+
+  init_test('foo', 'bar=s')
+
+The test file can be run with:
+
+  perl t/my_test.t --foo --bar=baz --log --trace
+
+C<init_test> returns:
+
+  ($model, 1, { foo => 1, bar => 'baz', log => 1 , trace => 1, error => 0 })
 
 =head2 setup_test_dir
 
