@@ -10,7 +10,7 @@ use 5.10.1;
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
 use Path::Tiny;
-use Getopt::Std;
+use Getopt::Long;
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
@@ -25,16 +25,20 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(init_test setup_test_dir);
 
 sub init_test {
-    my %opts;
-    getopts('tel', \%opts);
+    my @option_specs = qw/trace error log/;
+    push @option_specs, @_;
 
-    if ($opts{e}) {
+    GetOptions( \my %opts,  @option_specs)
+        || die "Unknown option. Expected options are @option_specs";
+
+    if ($opts{error}) {
         Config::Model::Exception::Any->Trace(1);
     }
 
     my $model = Config::Model->new( );
 
-    if ($opts{l}) {
+    if ($opts{log}) {
+        note("enabling logs");
         $model->initialize_log4perl;
     }
     else {
@@ -43,7 +47,7 @@ sub init_test {
 
     ok( $model, "compiled" );
 
-    return ($model, $opts{t});
+    return ($model, $opts{trace}, \%opts);
 }
 
 sub setup_test_dir {
