@@ -19,6 +19,8 @@ use Test::Differences;
 use Test::Memory::Cycle ;
 use Test::Log::Log4perl;
 
+use Config::Model::Tester::Setup qw/init_test setup_test_dir/;
+
 Test::Log::Log4perl->ignore_priority("info");
 
 
@@ -595,28 +597,39 @@ sub create_model_object {
 }
 
 sub run_tests {
-    my ( $arg, $test_only_app, $do ) = @_;
+    my ( $test_only_app, $do, $trace, $wr_root );
+    if (@_) {
+        my $arg;
+        note ("Calling run_tests with argument is deprecated");
+        ( $arg, $test_only_app, $do ) = @_;
 
-    my $log = 0;
+        my $log = 0;
 
-    my $trace = ($arg =~ /t/) ? 1 : 0;
-    $log  = 1 if $arg =~ /l/;
+        $trace = ($arg =~ /t/) ? 1 : 0;
+        $log  = 1 if $arg =~ /l/;
 
-    my $log4perl_user_conf_file = ($ENV{HOME} || '') . '/.log4config-model';
+        my $log4perl_user_conf_file = ($ENV{HOME} || '') . '/.log4config-model';
 
-    if ( $log and -e $log4perl_user_conf_file ) {
-        Log::Log4perl::init($log4perl_user_conf_file);
+        if ( $log and -e $log4perl_user_conf_file ) {
+            Log::Log4perl::init($log4perl_user_conf_file);
+        }
+        else {
+            Log::Log4perl->easy_init( $log ? $WARN : $ERROR );
+        }
+
+        Config::Model::Exception::Any->Trace(1) if $arg =~ /e/;
+
+        ok( 1, "compiled" );
+
+        # pseudo root where config files are written by config-model
+        $wr_root = path('wr_root');
     }
     else {
-        Log::Log4perl->easy_init( $log ? $WARN : $ERROR );
+        ($model, $trace) = init_test();
+        ( $test_only_app, $do)  = @ARGV;
+        # pseudo root where config files are written by config-model
+        $wr_root = setup_test_dir();
     }
-
-    Config::Model::Exception::Any->Trace(1) if $arg =~ /e/;
-
-    ok( 1, "compiled" );
-
-    # pseudo root where config files are written by config-model
-    my $wr_root = path('wr_root');
 
     my @group_of_tests = grep { /-test-conf.pl$/ } glob("t/model_tests.d/*");
 
