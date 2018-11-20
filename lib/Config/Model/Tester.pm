@@ -130,7 +130,9 @@ sub list_test_files {
 		#push @file_list, '/'.join('/',@l) ; # build a unix-like path even on windows
 	};
 
-    return sort @file_list;
+    # don't use return sort -> undefined behavior in scalar context.
+    my @res = sort @file_list;
+    return @res;
 }
 
 sub write_config_file {
