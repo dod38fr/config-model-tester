@@ -355,7 +355,7 @@ sub check_file_mode {
             my $stat = $wr_dir->child($f)->stat;
             ok($stat ,"stat found file $f");
             if ($stat) {
-                my $mode = $stat->mode & 07777 ;
+                my $mode = $stat->mode & oct(7777) ;
                 is($mode, $expected_mode, sprintf("check $f mode (got %o vs %o)",$mode,$expected_mode));
             }
         }
