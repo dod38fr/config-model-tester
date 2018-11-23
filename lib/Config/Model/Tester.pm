@@ -1231,8 +1231,8 @@ different check modes.
 
 Run all tests with one of these commands:
 
- prove -l t/model_test.t :: [ t|l|e [ <model_name> [ <regexp> ]]]
- perl -Ilib t/model_test.t  [ t|l|e [ <model_name> [ <regexp> ]]]
+ prove -l t/model_test.t :: [ --trace ] [ --log ] [ --error ] [ <model_name> [ <regexp> ]]
+ perl -Ilib t/model_test.t  [ --trace ] [ --log ] [ --error ] [ <model_name> [ <regexp> ]]
 
 By default, all tests are run on all models.
 
@@ -1242,28 +1242,28 @@ You can pass arguments to C<t/model_test.t>:
 
 =item *
 
-a bunch of letters. 't' to get test traces. 'e' to get stack trace in case of
-errors, 'l' to have logs. All other letters are ignored. E.g.
+Optional parameters: C<--trace> to get test traces. C<--error> to get stack trace in case of
+errors, C<--log> to have logs. E.g.
 
   # run with log and error traces
-  prove -lv t/model_test.t :: el
+  prove -lv t/model_test.t :: --error --logl
 
 =item *
 
 The model name to tests. E.g.:
 
   # run only fstab tests
-  prove -lv t/model_test.t :: x fstab
+  prove -lv t/model_test.t :: fstab
 
 =item *
 
 A regexp to filter subtest E.g.:
 
   # run only fstab tests foobar subtest
-  prove -lv t/model_test.t :: x fstab foobar
+  prove -lv t/model_test.t :: fstab foobar
 
   # run only fstab tests foo subtest
-  prove -lv t/model_test.t :: x fstab '^foo$'
+  prove -lv t/model_test.t :: fstab '^foo$'
 
 =back
 
