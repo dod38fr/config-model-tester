@@ -1056,7 +1056,7 @@ Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 
 =item *
 
-Call L<dump_tree|Config::Model::Node/dump_tree ( ... )> to check the validity of the
+Call L<dump_tree|Config::Model::Node/dump_tree> to check the validity of the
 data after optional C<apply_fix>. This step is not optional.
 
 As with C<check_before_fix>, both C<dump_errors> or C<dump_warnings> can be used.
@@ -1073,9 +1073,9 @@ correctly:
     },
 
 The keys of the hash points to the value to be checked using the
-syntax described in L<Config::Model::AnyThing:/"grab(...)">.
+syntax described in L<Config::Model::Role::Grab/grab>.
 
-You can run check using different check modes (See L<Config::Model::Value/"fetch( ... )">)
+You can run check using different check modes (See L<Config::Model::Value/fetch>)
 by passing a hash ref instead of a scalar :
 
     check  => {
@@ -1083,8 +1083,8 @@ by passing a hash ref instead of a scalar :
         'sections:base packages:0',    { mode => 'layered', value => "gcc-4.2-base' },
     },
 
-The whole hash content (except "value") is passed to  L<grab|Config::Model::AnyThing/"grab(...)">
-and L<fetch|Config::Model::Value/"fetch( ... )">
+The whole hash content (except "value") is passed to  L<grab|Config::Model::Role::Grab/grab>
+and L<fetch|Config::Model::Value/fetch>
 
 A regexp can also be used to check value:
 
