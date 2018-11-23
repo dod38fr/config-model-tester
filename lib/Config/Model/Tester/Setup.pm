@@ -29,7 +29,7 @@ sub init_test {
     push @option_specs, @_;
 
     GetOptions( \my %opts,  @option_specs)
-        || die "Unknown option. Expected options are @option_specs";
+        || die "Unknown option. Expected options are '--".join("', '--",@option_specs)."'\n";
 
     if ($opts{error}) {
         Config::Model::Exception::Any->Trace(1);
