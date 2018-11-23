@@ -1081,9 +1081,9 @@ Run specific content check to verify that configuration data was retrieved
 correctly:
 
     check => {
-        'fs:/proc fs_spec',           "proc" ,
-        'fs:/proc fs_file',           "/proc" ,
-        'fs:/home fs_file',          "/home",
+        'fs:/proc fs_spec' => "proc",
+        'fs:/proc fs_file' => "/proc",
+        'fs:/home fs_file' => "/home",
     },
 
 The keys of the hash points to the value to be checked using the
@@ -1100,8 +1100,8 @@ You can run check using different check modes (See L<Config::Model::Value/fetch>
 by passing a hash ref instead of a scalar :
 
     check  => {
-        'sections:debian packages:0' , { mode => 'layered', value => 'dpkg-dev' },
-        'sections:base packages:0',    { mode => 'layered', value => "gcc-4.2-base' },
+        'sections:debian packages:0' => { mode => 'layered', value => 'dpkg-dev' },
+        'sections:base packages:0'   => { mode => 'layered', value => "gcc-4.2-base' },
     },
 
 The whole hash content (except "value") is passed to  L<grab|Config::Model::Role::Grab/grab>
