@@ -109,7 +109,7 @@ strack trace when dying.
 
 C<--log>: When set, L<Log::Log4perl> uses the config from file
 C<~/.log4config-model> or the default config provided by
-L<Config::Model>. Without 'l', only Error level and above are shown.
+L<Config::Model>. By default, only Error level and above are shown.
 Experimental.
 
 =back
