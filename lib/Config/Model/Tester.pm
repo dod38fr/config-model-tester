@@ -264,16 +264,30 @@ sub check_data {
     while (@checks) {
         my $path       = shift @checks;
         my $v          = shift @checks;
-        my $check_v    = ref $v eq 'HASH' ? delete $v->{value} : $v;
-        my @check_args = ref $v eq 'HASH' ? %$v : ();
+        check_one_item($label, $root,$path, $v);
+    }
+}
+
+sub check_one_item {
+    my ($label, $root,$path, $check_data_l) = @_;
+
+    my @checks = ref $check_data_l eq 'ARRAY' ? @$check_data_l : ($check_data_l);
+
+    foreach my $check_data (@checks) {
+        my $check_v_l  = ref $check_data eq 'HASH' ? delete $check_data->{value} : $check_data;
+        my @check_args = ref $check_data eq 'HASH' ? %$check_data : ();
         my $check_str  = @check_args ? " (@check_args)" : '';
         my $obj = $root->grab( step => $path, type => ['leaf','check_list'], @check_args );
         my $got = $obj->fetch(@check_args);
-        if (ref $check_v eq 'Regexp') {
-            like( $got, $check_v, "$label check '$path' value with regexp$check_str" );
-        }
-        else {
-            is( $got, $check_v, "$label check '$path' value$check_str" );
+
+        my @check_v = ref($check_v_l) eq 'ARRAY' ? @$check_v_l : ($check_v_l);
+        foreach my $check_v (@check_v) {
+            if (ref $check_v eq 'Regexp') {
+                like( $got, $check_v, "$label check '$path' value with regexp$check_str" );
+            }
+            else {
+                is( $got, $check_v, "$label check '$path' value$check_str" );
+            }
         }
     }
 }
@@ -1075,6 +1089,13 @@ correctly:
 The keys of the hash points to the value to be checked using the
 syntax described in L<Config::Model::Role::Grab/grab>.
 
+Multiple check on the same item can be applied with a array ref:
+
+    check => [
+        Synopsis => 'fix undefined path_max for st_size zero',
+        Description => [ qr/^The downstream/,  qr/yada yada/ ]
+    ]
+
 You can run check using different check modes (See L<Config::Model::Value/fetch>)
 by passing a hash ref instead of a scalar :
 
@@ -1090,7 +1111,15 @@ A regexp can also be used to check value:
 
    check => {
       "License text" => qr/gnu/i,
-      "License text" => { mode => 'custom', value => qr/gnu/i },
+   }
+
+And specification can nest hash or array style:
+
+   check => {
+      "License:0 text" => qr/gnu/i,
+      "License:1 text" => [ qr/gnu/i, qr/Stallman/ ],
+      "License:2 text" => { mode => 'custom', value => [ qr/gnu/i , qr/Stallman/ ] },
+      "License:3 text" => [ qr/General/], { mode => 'custom', value => [ qr/gnu/i , qr/Stallman/ ] },
    }
 
 =item *
