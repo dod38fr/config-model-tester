@@ -240,12 +240,12 @@ sub dump_tree {
     }
     elsif ( ($no_warnings or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
         local $Config::Model::Value::nowarning = 1;
-        note("dump_warnings parameter is DEPRECATED");
+        note("dump_warnings parameter is DEPRECATED") if exists $t->{dump_warnings};
         &$risky;
         ok( 1, "Ran dump_tree (no warning check)" );
     }
     else {
-        note("dump_warnings parameter is DEPRECATED");
+        note("dump_warnings parameter is DEPRECATED") if $t->{dump_warnings};
         warnings_like { &$risky; } $t->{dump_warnings}, "Ran dump_tree";
     }
     ok( $dump, "Dumped $test_group config tree in $mode mode" );
