@@ -34,7 +34,7 @@ eval {
     require Config::Model::BackendMgr;
 } ;
 
-use vars qw/$model $conf_file_name $conf_dir $model_to_test $home_for_test @tests $skip @ISA @EXPORT/;
+use vars qw/$model $conf_file_name $conf_dir $model_to_test $app_to_test $home_for_test @tests $skip @ISA @EXPORT/;
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -441,7 +441,7 @@ sub create_second_instance {
         root_dir        => $wr_dir2->stringify,
         config_file     => $t->{config_file} ,
         instance_name   => "$test_group-$t_name-w",
-        application     => $test_group,
+        application     => $app_to_test,
         check           => $t->{load_check2} || 'yes',
         config_dir      => $config_dir_override,
         @options
@@ -463,15 +463,19 @@ sub run_model_test {
     undef $conf_file_name ;
     undef $conf_dir ;
     undef $home_for_test ;
-    undef $model_to_test ;
+    undef $model_to_test ; # deprecated
+    undef $app_to_test;
 
     note("Beginning $test_group test ($test_group_conf)");
+    note('$model_to_test variable is deprecated. Please use $app_to_test instead') if $model_to_test;
 
     unless ( my $return = do "./$test_group_conf" ) {
         warn "couldn't parse $test_group_conf: $@" if $@;
         warn "couldn't do $test_group_conf: $!" unless defined $return;
         warn "couldn't run $test_group_conf" unless $return;
     }
+
+    $app_to_test ||= $test_group;
 
     if ($skip) {
         note("Skipped $test_group test ($test_group_conf)");
@@ -484,12 +488,13 @@ sub run_model_test {
     Config::Model::BackendMgr::_set_test_home($home_for_test) ;
 
     if (not defined $model_to_test) {
-        $model_to_test = $applications->{$test_group};
+        $model_to_test = $applications->{$app_to_test};
         if (not defined $model_to_test) {
             my @k = sort values %$applications;
             my @files = map { $_->{_file} // 'unknown' } values %$appli_info ;
-            die "Cannot find model name for $test_group in files >@files<. Know dev models are >@k<. ".
-                "Check your test name (the file ending with -test-conf.pl) or set the \$model_to_test global variable\n";
+            die "Cannot find application or model for $test_group in files >@files<. Known applications are",
+                sort keys %$applications, ". Known models are >@k<. ".
+                "Check your test name (the file ending with -test-conf.pl) or set the \$app_to_test global variable\n";
         }
     }
 
@@ -530,7 +535,7 @@ sub run_model_test {
             # /etc/foo.ini (absolute path, like in /etc/)
             root_dir        => $wr_dir->stringify,
             instance_name   => $inst_name,
-            application     => $test_group,
+            application     => $app_to_test,
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
             config_dir      => $config_dir_override,
