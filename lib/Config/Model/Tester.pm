@@ -1335,6 +1335,14 @@ is a more complex example showing how to test a backend. The test is done creati
 
 =back
 
+=head1 CREDITS
+
+In alphabetical order:
+
+=for :list
+* Cyrille Bollu
+
+Many thanks for your help.
 
 =head1 SEE ALSO
 
