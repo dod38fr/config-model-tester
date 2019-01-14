@@ -729,7 +729,7 @@ C<lib/Config/Model/system.d/lcdproc>
          \-- LCDD-0.5.5      # test case for older LCDproc
 
 Subtest specification is written in C<lcdproc-test-conf.pl> file (i.e. this
-modules looks for files named  like C<< <app-name>-test-conf.pl> >>).
+module looks for files named like C<< <app-name>-test-conf.pl> >>).
 
 Subtests data is provided in files in directory C<lcdproc-examples> (
 i.e. this modules looks for test data in directory
@@ -794,8 +794,8 @@ Let's consider this example of 2 tests cases for ssh:
          \-- user_ssh_config
 
 
-Unfortunately, C<user_ssh_config> is a user file, so you specify where
-the home directory for the tests with another global variable:
+Unfortunately, C<user_ssh_config> is a user file, so you need to specify
+where the tests' home directory is located with another global variable:
 
   $home_for_test = '/home/joe' ;
 
@@ -886,7 +886,7 @@ L<test for shellvar backend|https://github.com/dod38fr/config-model/blob/master/
 
 =head2 Test specification with arbitrary file names
 
-In some models like C<Multistrap>, the config file is chosen by the
+In some models, like C<Multistrap>, the config file is chosen by the
 user. In this case, the file name must be specified for each tests
 case:
 
