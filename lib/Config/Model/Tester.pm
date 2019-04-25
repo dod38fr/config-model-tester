@@ -469,10 +469,24 @@ sub load_model_test_data {
     note("Beginning $test_group test ($test_group_conf)");
     note('$model_to_test variable is deprecated. Please use $app_to_test instead') if $model_to_test;
 
-    unless ( my $return = do "./$test_group_conf" ) {
+    my $result;
+    unless ( $result = do "./$test_group_conf" ) {
         warn "couldn't parse $test_group_conf: $@" if $@;
-        warn "couldn't do $test_group_conf: $!" unless defined $return;
-        warn "couldn't run $test_group_conf" unless $return;
+        warn "couldn't do $test_group_conf: $!" unless defined $result;
+        warn "couldn't run $test_group_conf" unless $result;
+    }
+
+    if (ref($result) eq 'ARRAY') {
+        # simple list of tests
+        @tests = @$result;
+    }
+    elsif (ref($result) eq 'HASH') {
+        $conf_dir = $result->{conf_dir};
+        @tests = @{ $result->{tests} };
+    }
+    else {
+        note(qq!warning: $test_group_conf should return a data structure instead of "1;". !
+                 . qq!See Config::Model::Tester for details!);
     }
 
     $app_to_test ||= $test_group;
