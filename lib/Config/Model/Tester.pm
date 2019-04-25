@@ -40,14 +40,14 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(run_tests);
 
-$File::Copy::Recursive::DirPerms = 0755;
+$File::Copy::Recursive::DirPerms = oct(755);
 
 sub setup_test {
     my ( $test_group, $t_name, $wr_root, $trace, $t_data ) = @_;
 
     # cleanup before tests
     $wr_root->remove_tree();
-    $wr_root->mkpath( { mode => 0755 } );
+    $wr_root->mkpath( { mode => oct(755) } );
 
     $conf_dir =~ s!~/!$home_for_test/! if $conf_dir and $home_for_test;
 
@@ -76,7 +76,7 @@ sub setup_test {
             }
             $destination_str =~ s!~/!$home_for_test/! if $home_for_test;
             my $destination = $wr_dir->child($destination_str) ;
-            $destination->parent->mkpath( { mode => 0755 }) ;
+            $destination->parent->mkpath( { mode => oct(755) }) ;
             my $data_file = $ex_data->child($file);
             die "cannot find $data_file" unless $data_file->exists;
             my $data = $data_file->slurp() ;
@@ -87,7 +87,7 @@ sub setup_test {
     elsif ( $ex_data->is_dir ) {
         # copy whole dir
         my $destination_dir = $conf_dir ? $wr_dir->child($conf_dir) : $wr_dir ;
-        $destination_dir->mkpath( { mode => 0755 });
+        $destination_dir->mkpath( { mode => oct(755) });
         say "dircopy ". $ex_data->stringify . '->'. $destination_dir->stringify
             if $trace ;
         dircopy( $ex_data->stringify, $destination_dir->stringify )
@@ -141,7 +141,7 @@ sub write_config_file {
     if ($t->{config_file}) {
         my $file = $conf_dir ? "$conf_dir/" : '';
         $file .= $t->{config_file} ;
-        $wr_dir->child($file)->parent->mkpath({mode => 0755} ) ;
+        $wr_dir->child($file)->parent->mkpath({mode => oct(755)} ) ;
     }
 }
 
@@ -1190,7 +1190,7 @@ Check the mode of the written files:
 
   file_mode => {
      "~/.ssh/ssh_config"     => 0600, # octal mode
-     "debian/stuff.postinst" => 0755,
+     "debian/stuff.postinst" => oct(755),
   }
 
 Only the last four octets of the mode are tested. I.e. the test is done with
