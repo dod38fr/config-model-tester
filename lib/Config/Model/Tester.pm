@@ -456,8 +456,8 @@ sub create_second_instance {
     return $i2_root;
 }
 
-sub run_model_test {
-    my ($test_group, $test_group_conf, $do, $model, $trace, $wr_root) = @_ ;
+sub load_model_test_data {
+    my ($test_group, $test_group_conf) = @_;
 
     $skip = 0;
     undef $conf_file_name ;
@@ -497,6 +497,14 @@ sub run_model_test {
                 "Check your test name (the file ending with -test-conf.pl) or set the \$app_to_test global variable\n";
         }
     }
+
+    return $appli_info;
+}
+
+sub run_model_test {
+    my ($test_group, $test_group_conf, $do, $model, $trace, $wr_root) = @_ ;
+
+    my $appli_info = load_model_test_data($test_group, $test_group_conf);
 
     my $config_dir_override = $appli_info->{$test_group}{config_dir}; # may be undef
 
