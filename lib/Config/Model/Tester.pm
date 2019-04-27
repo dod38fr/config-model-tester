@@ -34,7 +34,7 @@ eval {
     require Config::Model::BackendMgr;
 } ;
 
-use vars qw/$model $conf_file_name $conf_dir $model_to_test $app_to_test $home_for_test @tests $skip @ISA @EXPORT/;
+use vars qw/@ISA @EXPORT/;
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -43,13 +43,18 @@ require Exporter;
 $File::Copy::Recursive::DirPerms = oct(755);
 
 sub setup_test {
-    my ( $test_group, $t_name, $wr_root, $trace, $t_data ) = @_;
+    my ( $test_group, $t_name, $wr_root, $trace, $test_suite_data, $t_data ) = @_;
 
     # cleanup before tests
     $wr_root->remove_tree();
     $wr_root->mkpath( { mode => oct(755) } );
+    my ($conf_dir, $conf_file_name, $home_for_test)
+        = @$test_suite_data{qw/conf_dir conf_file_name home_for_test/};
 
-    $conf_dir =~ s!~/!$home_for_test/! if $conf_dir and $home_for_test;
+    if ($conf_dir and $home_for_test) {
+        $conf_dir =~ s!~/!$home_for_test/!;
+        $test_suite_data->{conf_dir} = $conf_dir;
+    }
 
     my $wr_dir    = $wr_root->child('test-' . $t_name);
     my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
@@ -427,7 +432,7 @@ sub check_added_or_removed_files {
 }
 
 sub create_second_instance {
-    my ($test_group, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override) = @_;
+    my ($model, $test_group, $t_name, $wr_dir, $wr_dir2, $test_suite_data, $t, $config_dir_override) = @_;
 
     # create another instance to read the conf file that was just written
     dircopy( $wr_dir->stringify, $wr_dir2->stringify )
@@ -437,11 +442,11 @@ sub create_second_instance {
     push @options, backend_arg => $t->{backend_arg} if $t->{backend_arg};
 
     my $i2_test = $model->instance(
-        root_class_name => $model_to_test,
+        root_class_name => $test_suite_data->{model_to_test},
         root_dir        => $wr_dir2->stringify,
         config_file     => $t->{config_file} ,
         instance_name   => "$test_group-$t_name-w",
-        application     => $app_to_test,
+        application     => $test_suite_data->{app_to_test},
         check           => $t->{load_check2} || 'yes',
         config_dir      => $config_dir_override,
         @options
@@ -456,8 +461,21 @@ sub create_second_instance {
     return $i2_root;
 }
 
-sub load_model_test_data {
-    my ($test_group, $test_group_conf) = @_;
+sub create_test_class {
+    my ($model, $config_classes) = @_;
+    return unless $config_classes;
+
+    foreach my $c ( @$config_classes) {
+        $model->create_config_class(@$c);
+    }
+}
+
+our ($model, $conf_file_name, $conf_dir, $model_to_test, $app_to_test, $home_for_test, @tests, $skip);
+
+sub load_test_suite_data {
+    my ($model_obj, $test_group, $test_group_conf) = @_;
+
+    local ($model, $conf_file_name, $conf_dir, $model_to_test, $app_to_test, $home_for_test, @tests, $skip);
 
     $skip = 0;
     undef $conf_file_name ;
@@ -465,6 +483,7 @@ sub load_model_test_data {
     undef $home_for_test ;
     undef $model_to_test ; # deprecated
     undef $app_to_test;
+    $model = $model_obj; # $model is used by test in Config::Model
 
     note("Beginning $test_group test ($test_group_conf)");
     note('$model_to_test variable is deprecated. Please use $app_to_test instead') if $model_to_test;
@@ -476,58 +495,72 @@ sub load_model_test_data {
         warn "couldn't run $test_group_conf" unless $result;
     }
 
+    my $test_suite_data;
     if (ref($result) eq 'ARRAY') {
         # simple list of tests
-        @tests = @$result;
+        $test_suite_data = { tests => $result };
     }
     elsif (ref($result) eq 'HASH') {
-        $conf_dir = $result->{conf_dir};
-        @tests = @{ $result->{tests} };
+        $test_suite_data = $result;
     }
     else {
         note(qq!warning: $test_group_conf should return a data structure instead of "1;". !
                  . qq!See Config::Model::Tester for details!);
+        $test_suite_data = {
+            tests => [ @tests ],
+            skip => $skip,
+            conf_file_name  => $conf_file_name ,
+            conf_dir  => $conf_dir ,
+            home_for_test  => $home_for_test ,
+            model_to_test => $model_to_test,
+            app_to_test => $app_to_test,
+        };
     }
 
-    $app_to_test ||= $test_group;
+    create_test_class($model, $test_suite_data->{config_classes});
 
-    if ($skip) {
+    $test_suite_data->{app_to_test} ||= $test_group;
+
+    if ($test_suite_data->{skip}) {
         note("Skipped $test_group test ($test_group_conf)");
         return;
     }
 
     my ($trash, $appli_info, $applications) = Config::Model::Lister::available_models(1);
+    $test_suite_data->{appli_info} = $appli_info;
 
     # even undef, this resets the global variable there
-    Config::Model::BackendMgr::_set_test_home($home_for_test) ;
+    Config::Model::BackendMgr::_set_test_home($test_suite_data->{home_for_test}) ;
 
-    if (not defined $model_to_test) {
-        $model_to_test = $applications->{$app_to_test};
-        if (not defined $model_to_test) {
+    if (not defined $test_suite_data->{model_to_test}) {
+        $test_suite_data->{model_to_test} = $applications->{$test_suite_data->{app_to_test}};
+        if (not defined $test_suite_data->{model_to_test}) {
             my @k = sort values %$applications;
             my @files = map { $_->{_file} // 'unknown' } values %$appli_info ;
             die "Cannot find application or model for $test_group in files >@files<. Known applications are",
                 sort keys %$applications, ". Known models are >@k<. ".
-                "Check your test name (the file ending with -test-conf.pl) or set the \$app_to_test global variable\n";
+                "Check your test name (the file ending with -test-conf.pl) or set app_to_test parameter\n";
         }
     }
 
-    return $appli_info;
+    return $test_suite_data;
 }
 
 sub run_model_test {
     my ($test_group, $test_group_conf, $do, $model, $trace, $wr_root) = @_ ;
 
-    my $appli_info = load_model_test_data($test_group, $test_group_conf);
+    my $test_suite_data = load_test_suite_data($model,$test_group, $test_group_conf);
+    my $appli_info = $test_suite_data->{appli_info};
 
     my $config_dir_override = $appli_info->{$test_group}{config_dir}; # may be undef
 
-    my $note ="$test_group uses $model_to_test model";
+    my $note ="$test_group uses ".$test_suite_data->{model_to_test}." model";
+    my $conf_file_name = $test_suite_data->{conf_file_name};
     $note .= " on file $conf_file_name" if defined $conf_file_name;
     note($note);
 
     my $idx = 0;
-    foreach my $t (@tests) {
+    foreach my $t (@{$test_suite_data->{tests}}) {
         translate_test_data($t);
         my $t_name = $t->{name} || "t$idx";
         if ( defined $do and $t_name !~ /$do/) {
@@ -537,9 +570,9 @@ sub run_model_test {
         note("Beginning subtest $test_group $t_name");
 
         my ($wr_dir, $wr_dir2, $conf_file, $ex_data, @file_list)
-            = setup_test ($test_group, $t_name, $wr_root,$trace, $t);
+            = setup_test ($test_group, $t_name, $wr_root,$trace, $test_suite_data, $t);
 
-        write_config_file($conf_dir,$wr_dir,$t);
+        write_config_file($test_suite_data->{conf_dir},$wr_dir,$t);
 
         my $inst_name = "$test_group-" . $t_name;
 
@@ -552,12 +585,12 @@ sub run_model_test {
         # eventually, we may end up with several instances of Dpkg
         # model in the same process. So we can't play with chdir
         my $inst = $model->instance(
-            root_class_name => $model_to_test,
+            root_class_name => $test_suite_data->{model_to_test},
             # need to keed root_dir to handle config files like
             # /etc/foo.ini (absolute path, like in /etc/)
             root_dir        => $wr_dir->stringify,
             instance_name   => $inst_name,
-            application     => $app_to_test,
+            application     => $test_suite_data->{app_to_test},
             config_file     => $t->{config_file} ,
             check           => $t->{load_check} || 'yes',
             config_dir      => $config_dir_override,
@@ -594,9 +627,9 @@ sub run_model_test {
 
         check_file_mode($wr_dir,$t) ;
 
-        check_added_or_removed_files ($conf_dir, $wr_dir, $t, @file_list) if $ex_data->is_dir;
+        check_added_or_removed_files ($test_suite_data->{conf_dir}, $wr_dir, $t, @file_list) if $ex_data->is_dir;
 
-        my $i2_root = create_second_instance ($test_group, $t_name, $wr_dir, $wr_dir2,$t, $config_dir_override);
+        my $i2_root = create_second_instance ($model, $test_group, $t_name, $wr_dir, $wr_dir2, $test_suite_data, $t, $config_dir_override);
 
         load_instructions ($i2_root,$t->{load2},$trace) if $t->{load2} ;
 
@@ -609,9 +642,9 @@ sub run_model_test {
             "compare original $test_group custom data with 2nd instance custom data",
         );
 
-        ok( -s "$wr_dir2/$conf_dir/$conf_file_name" ,
+        ok( -s "$wr_dir2/$test_suite_data->{conf_dir}/$test_suite_data->{conf_file_name}" ,
             "check that original $test_group file was not clobbered" )
-                if defined $conf_file_name ;
+                if defined $test_suite_data->{conf_file_name} ;
 
         check_data("second", $i2_root, $t->{wr_check}, $t->{no_warnings}) if $t->{wr_check} ;
 
@@ -641,6 +674,7 @@ sub create_model_object {
 
 sub run_tests {
     my ( $test_only_app, $do, $trace, $wr_root );
+    my $model;
     if (@_) {
         my $arg;
         note ("Calling run_tests with argument is deprecated");
