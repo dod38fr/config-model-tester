@@ -768,7 +768,7 @@ explained in next section.
 Each test case is represented by a configuration file (not
 a directory) in the C<*-examples> directory. This configuration file
 will be used by the model to test and is copied as
-C<$confdir/$conf_file_name> using the global variables explained
+C<$confdir/$conf_file_name> using the test data structure explained
 below.
 
 In the example below, we have 1 app model to test: C<lcdproc> and 2 tests
@@ -803,7 +803,7 @@ See L</Examples> for a link to the actual LCDproc model tests
 
 When a configuration is spread over several files, each test case is
 provided in a sub-directory. This sub-directory is copied in
-C<$conf_dir> (a global variable as explained below)
+C<conf_dir> (a test parameter as explained below)
 
 In the example below, the test specification is written in
 C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
@@ -834,7 +834,8 @@ contains several files. The destination of the test files may depend
 on the system (e.g. the OS). For instance, system wide C<ssh_config>
 is stored in C</etc/ssh> on Linux, and directly in C</etc> on MacOS.
 
-These files are copied in a test directory using a C<setup> parameter:
+These files are copied in a test directory using a C<setup> parameter
+in test case specification:
 
   setup => {
     test_file_in_example_dir => 'destination'
@@ -851,15 +852,15 @@ Let's consider this example of 2 tests cases for ssh:
 
 
 Unfortunately, C<user_ssh_config> is a user file, so you need to specify
-where the tests' home directory is located with another global variable:
+where is located the home directory of the test with another global parameter:
 
-  $home_for_test = '/home/joe' ;
+  home_for_test => '/home/joe' ;
 
 For Linux only, the C<setup> parameter is:
 
  setup => {
-   'system_ssh_config' => '/etc/ssh/ssh_config',
-   'user_ssh_config'   => "~/.ssh/config"
+   system_ssh_config => '/etc/ssh/ssh_config',
+   user_ssh_config   => "~/.ssh/config"
  }
 
 On the other hand, system wide config file is different on MacOS and
@@ -881,61 +882,96 @@ See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-mode
 
 =head2 Basic test specification
 
-Each model subtest is specified in C<< <model>-test-conf.pl >>. This file
-contains a set of global variables. (yes, global variables are often bad ideas
-in programs, but they are handy for tests):
+Each model subtest is specified in C<< <model>-test-conf.pl >>. This
+file must return a data structure containing the test
+specifications. Each test data structure contains global parameters
+(Applied to all tests cases) and test cases parameters (parameters are
+applied to the test case)
 
- # config file name (used to copy test case into test wr_root/model_tests directory)
- $conf_file_name = "fstab" ;
- # config dir where to copy the file (optional)
- #$conf_dir = "etc" ;
- # home directory for this test
- $home_for_test = '/home/joe' ;
+ use strict;
+ use warnings;
+ {
+   # global parameters
 
-Here, C<t0> file will be copied in C<wr_root/model_tests/test-t0/etc/fstab>.
+   # config file name (used to copy test case into test wr_root/model_tests directory)
+   conf_file_name => "fstab",
+   # config dir where to copy the file (optional)
+   conf_dir => "etc",
+   # home directory for this test
+   home_for_test => '/home/joe'
 
- # config model name to test
- $model_to_test = "Fstab" ;
+   tests =>  [
+     {
+       # test case 1
+       name => 'my_first_test',
+       # other test case parameters
+     },
+     {
+       # test case 2
+       name => 'my_second_test',
+       # other test case parameters
+     },
+     # ...
+   ], # will be filled with test cases
+ };
 
- # list of tests. This modules looks for @tests global variable
- @tests = (
-    {
-     # test name
-     name => 't0',
-     # add optional specification here for t0 test
-    },
-    {
-     name => 't1',
-     # add optional specification here for t1 test
-    },
- );
+ # do not add 1; at the end of the file
 
- 1; # to keep Perl happy
+In the example below, C<t0> file will be copied in C<wr_root/model_tests/test-t0/etc/fstab>.
 
-You can suppress warnings by specifying C<< no_warnings => 1 >>. On
-the other hand, you may also want to check for warnings specified to
-your model. In this case, you should avoid specifying C<no_warnings>
-here and specify warning tests or warning filters as mentioned below.
+ use strict;
+ use warnings;
+ {
+   # config model name to test
+   model_to_test => "Fstab",
+
+   # list of tests.
+   tests => [
+     {
+       # test name
+       name => 't0',
+       # add optional specification here for t0 test
+     },
+     {
+       name => 't1',
+       # add optional specification here for t1 test
+     },
+   ]
+ };
+
+
+You can suppress warnings by specifying C<< no_warnings => 1 >> in
+each test case. On the other hand, you may also want to check for
+warnings specified to your model. In this case, you should avoid
+specifying C<no_warnings> here and specify warning tests or warning
+filters as mentioned below.
 
 See actual L<fstab test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/fstab-test-conf.pl>.
 
 =head2 Skip a test
 
-A test file can be skipped using C<$skip> global variable.
+A test file can be skipped using C<skip> global test parameter.
 
 In this example, test is skipped when not running on a Debian system:
 
  eval { require AptPkg::Config; };
- $skip = ( $@ or not -r '/etc/debian_version' ) ? 1 : 0;
+ my $skip = ( $@ or not -r '/etc/debian_version' ) ? 1 : 0;
+
+ {
+   skip => $skip,
+   tests => [ ] ,
+ };
 
 =head2 Internal tests or backend tests
 
 Some tests will require the creation of a configuration class dedicated
 for test (typically to test corner cases on a backend).
 
-This test class can be created directly in the test specification
-by calling L<create_config_class|Config::Model/create_config_class> on
-C<$model> variable. See for instance the
+This test class can be created directly in the test specification by
+specifying tests classes in C<classes> global test parameters in an
+array ref. Each array element is a data structure that use
+L<create_config_class|Config::Model/create_config_class> parameters.
+See for instance the
 L<layer test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/layer-test-conf.pl>
 or the
 L<test for shellvar backend|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-shellvar-test-conf.pl>.
@@ -946,34 +982,33 @@ In some models, like C<Multistrap>, the config file is chosen by the
 user. In this case, the file name must be specified for each tests
 case:
 
- # not needed if test file is named multistrap-test-conf.pl
- $model_to_test = "Multistrap";
+ {
+   # not needed if test file is named multistrap-test-conf.pl
+   model_to_test => "Multistrap",
 
- @tests = (
-    {
-        name        => 'arm',
-        config_file => '/home/foo/my_arm.conf',
-        check       => {},
-    },
- );
-
+   tests => [ {
+       name        => 'arm',
+       config_file => '/home/foo/my_arm.conf',
+       check       => {},
+    }]
+ };
 
 See the actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
 
 =head2 Backend argument
 
 Some application like systemd requires a backend argument specified by
-User (e.g. a service name for systemd). The parameter C<backend_arg>
+user (e.g. a service name for systemd). The parameter C<backend_arg>
 can be specified to emulate this behavior.
 
 =head2 Re-use test data
 
 When the input data for test is quite complex (several files), it may
-be interested to re-use these data for other tests case. Knowing that
-test name must must unique, you can re-use test data with C<data_from>
+be interesting to re-use these data for other test cases. Knowing that
+test names must be unique, you can re-use test data with C<data_from>
 parameter. For instance:
 
-  @tests = (
+  tests => [
     {
         name  => 'some-test',
         # ...
@@ -983,6 +1018,7 @@ parameter. For instance:
         data_from  => 'some-test',    # re-use data from test above
         # ...
     },
+  ]
 
 See
 L<plainfile backend test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-plainfile-test-conf.pl>
@@ -991,7 +1027,7 @@ for a real life example.
 =head2 Test scenario
 
 Each subtest follow a sequence explained below. Each step of this
-sequence may be altered by adding specification in
+sequence may be altered by adding test case parameters in
 C<< <model-to-test>-test-conf.pl >>:
 
 =over
@@ -1069,9 +1105,9 @@ C<quiet> to suppress progress messages during update.
 =item *
 
 C<log4perl_update_warnings> is used to check the warnings produced
- during update. The argument is passed to C<expect> function of
- L<Test::Log::Log4Perl>. See C<load_warnings> parameter above for more
- details.
+during update. The argument is passed to C<expect> function of
+L<Test::Log::Log4Perl>. See C<load_warnings> parameter above for more
+details.
 
 =item *
 
@@ -1196,7 +1232,7 @@ Verify if a hash contains one or more keys (or keys matching a regexp):
 
 =item *
 
-Verify that a hash has B<not> a key (or a key matching a regexp):
+Verify that a hash does B<not> have a key (or a key matching a regexp):
 
  has_not_key => [
     'copyright Files' => qr/.virus$/ # silly, isn't ?
@@ -1245,12 +1281,12 @@ in an array ref:
 Check the mode of the written files:
 
   file_mode => {
-     "~/.ssh/ssh_config"     => 0600, # octal mode
+     "~/.ssh/ssh_config"     => oct(600), # better than 0600
      "debian/stuff.postinst" => oct(755),
   }
 
 Only the last four octets of the mode are tested. I.e. the test is done with
-C< $file_mode & 07777 >
+C< $file_mode & oct(7777) >
 
 Note: this test is skipped on Windows
 
@@ -1358,6 +1394,10 @@ A regexp to filter subtest E.g.:
 =back
 
 =head1 Examples
+
+Some of these examples may still use global variables (which is
+deprecated). Such files may be considered as buggy after Aug
+2019. Please warn the author if you find one.
 
 =over
 
