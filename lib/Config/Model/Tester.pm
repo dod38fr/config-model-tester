@@ -485,7 +485,6 @@ sub load_test_suite_data {
     $model = $model_obj; # $model is used by test in Config::Model
 
     note("Beginning $test_group test ($test_group_conf)");
-    note('$model_to_test variable is deprecated. Please use $app_to_test instead') if $model_to_test;
 
     my $result;
     unless ( $result = do "./$test_group_conf" ) {
