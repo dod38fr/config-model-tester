@@ -132,7 +132,6 @@ sub list_test_files {
 		next if $child->is_dir ;
 
 		push @file_list, '/' . $child->relative($debian_str)->stringify;
-		#push @file_list, '/'.join('/',@l) ; # build a unix-like path even on windows
 	};
 
     # don't use return sort -> undefined behavior in scalar context.
