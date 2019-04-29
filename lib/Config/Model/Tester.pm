@@ -742,7 +742,7 @@ Run tests with:
 =head1 DESCRIPTION
 
 This class provides a way to test configuration models with tests files.
-This class was designed to tests several models and several tests
+This class was designed to tests several models and run several tests
 cases per model.
 
 A specific layout for test files must be followed.
@@ -754,8 +754,9 @@ Each subtest is defined in a file like:
  t/model_tests.d/<app-name>-test-conf.pl
 
 This file specifies that C<app-name> (which is defined in
-C<lib/Config/Model/*.d> directory) will be used for the test cases
-defined in the C<*-test-conf.pl> file.
+C<lib/Config/Model/*.d> directory) is used for the test cases defined
+in the C<*-test-conf.pl> file. The model to test is inferred from the
+application name to test.
 
 This file contains a list of test case (explained below) and expects a
 set of files used as test data. The layout of these test data files is
@@ -765,7 +766,7 @@ explained in next section.
 
 Each test case is represented by a configuration file (not
 a directory) in the C<*-examples> directory. This configuration file
-will be used by the model to test and is copied as
+is used by the model to test and is copied as
 C<$confdir/$conf_file_name> using the test data structure explained
 below.
 
@@ -788,7 +789,7 @@ module looks for files named like C<< <app-name>-test-conf.pl> >>).
 Subtests data is provided in files in directory C<lcdproc-examples> (
 i.e. this modules looks for test data in directory
 C<< <model-name>-examples> >>. C<lcdproc-test-conf.pl> contains
-instructions so that each file will be used as a C</etc/LCDd.conf>
+instructions so that each file is used as a C</etc/LCDd.conf>
 file during each test case.
 
 C<lcdproc-test-conf.pl> can contain specifications for more test
@@ -805,8 +806,8 @@ C<conf_dir> (a test parameter as explained below)
 
 In the example below, the test specification is written in
 C<dpkg-test-conf.pl>. Dpkg layout requires several files per test case.
-C<dpkg-test-conf.pl> will contain instructions so that each directory
-under C<dpkg-examples> will be used.
+C<dpkg-test-conf.pl> contains instructions so that each directory
+under C<dpkg-examples> is used.
 
  t/model_tests.d
  \-- dpkg-test-conf.pl         # subtest specification
@@ -880,7 +881,7 @@ See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-mode
 
 =head2 Basic test specification
 
-Each model subtest is specified in C<< <model>-test-conf.pl >>. This
+Each model subtest is specified in C<< <app>-test-conf.pl >>. This
 file must return a data structure containing the test
 specifications. Each test data structure contains global parameters
 (Applied to all tests cases) and test cases parameters (parameters are
@@ -910,19 +911,16 @@ applied to the test case)
        # other test case parameters
      },
      # ...
-   ], # will be filled with test cases
+   ],
  };
 
  # do not add 1; at the end of the file
 
-In the example below, C<t0> file will be copied in C<wr_root/model_tests/test-t0/etc/fstab>.
+In the example below, C<t0> file is copied in C<wr_root/model_tests/test-t0/etc/fstab>.
 
  use strict;
  use warnings;
  {
-   # config model name to test
-   model_to_test => "Fstab",
-
    # list of tests.
    tests => [
      {
@@ -936,7 +934,6 @@ In the example below, C<t0> file will be copied in C<wr_root/model_tests/test-t0
      },
    ]
  };
-
 
 You can suppress warnings by specifying C<< no_warnings => 1 >> in
 each test case. On the other hand, you may also want to check for
@@ -962,17 +959,26 @@ In this example, test is skipped when not running on a Debian system:
 
 =head2 Internal tests or backend tests
 
-Some tests will require the creation of a configuration class dedicated
+Some tests require the creation of a configuration class dedicated
 for test (typically to test corner cases on a backend).
 
 This test class can be created directly in the test specification by
-specifying tests classes in C<classes> global test parameters in an
+specifying tests classes in C<config_classes> global test parameter in an
 array ref. Each array element is a data structure that use
 L<create_config_class|Config::Model/create_config_class> parameters.
 See for instance the
 L<layer test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/layer-test-conf.pl>
 or the
 L<test for shellvar backend|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-shellvar-test-conf.pl>.
+
+In this case, no application exist for such classes so the model to
+test must be specified in a global test parameter:
+
+  return {
+    config_classes => [ { name => "Foo" } , ... ],
+    model_to_test => "Foo",
+    tests => [ ... ]
+  };
 
 =head2 Test specification with arbitrary file names
 
@@ -981,9 +987,6 @@ user. In this case, the file name must be specified for each tests
 case:
 
  {
-   # not needed if test file is named multistrap-test-conf.pl
-   model_to_test => "Multistrap",
-
    tests => [ {
        name        => 'arm',
        config_file => '/home/foo/my_arm.conf',
