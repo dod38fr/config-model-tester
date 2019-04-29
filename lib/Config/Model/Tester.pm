@@ -482,7 +482,7 @@ sub load_test_suite_data {
     undef $home_for_test ;
     undef $model_to_test ; # deprecated
     undef $app_to_test;
-    $model = $model_obj; # $model is used by test in Config::Model
+    $model = $model_obj; # $model is used by Config::Model tests
 
     note("Beginning $test_group test ($test_group_conf)");
 
