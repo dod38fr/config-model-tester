@@ -465,7 +465,8 @@ sub create_test_class {
     return unless $config_classes;
 
     foreach my $c ( @$config_classes) {
-        $model->create_config_class(@$c);
+        my @parms = ref($c) eq 'HASH' ? %$c : @$c;
+        $model->create_config_class(@parms);
     }
 }
 
