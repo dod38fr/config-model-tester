@@ -5,7 +5,7 @@ use warnings;
 use strict;
 use locale;
 use utf8;
-use 5.10.1;
+use 5.12.0;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
