@@ -976,7 +976,7 @@ In this case, no application exist for such classes so the model to
 test must be specified in a global test parameter:
 
   return {
-    config_classes => [ { name => "Foo" } , ... ],
+    config_classes => [ { name => "Foo", element => ... } , ... ],
     model_to_test => "Foo",
     tests => [ ... ]
   };
