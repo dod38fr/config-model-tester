@@ -75,6 +75,7 @@ sub setup_test {
             my $map = $setup->{$file} ;
             my $destination_str
                 = ref ($map) eq 'HASH' ? $map->{$^O} // $map->{default}
+                : ref ($map) eq 'ARRAY' ? $map->[-1]
                 :                        $map;
             if (not defined $destination_str) {
                 die "$test_group $t_name setup error: cannot find destination for test file $file" ;
@@ -86,6 +87,13 @@ sub setup_test {
             die "cannot find $data_file" unless $data_file->exists;
             my $data = $data_file->slurp() ;
             $destination->spew( $data );
+            if (ref $map eq 'ARRAY') {
+                foreach my $link (@$map) {
+                    $link =~ s!~/!$home_for_test/! if $home_for_test;
+                    symlink $destination->absolute->stringify, $wr_dir->child($link)->stringify
+                        unless $destination eq $link;
+                }
+            }
             @file_list = list_test_files ($wr_dir);
         }
     }
@@ -877,6 +885,18 @@ Perl C<$^O> variable:
         'user_ssh_config' => "~/.ssh/config"
       }
 
+C<systemd> is another beast where configuration files can be symlinks
+to C</dev/null> or other files. To emulate this situation, use an array as setup target:
+
+  setup => {
+      # test data file => [ link (may be repeated), ..       link(s) target contains test data ]
+      'ssh.service' => [ '/etc/systemd/system/sshd.service', '/lib/systemd/system/ssh.service' ]
+  }
+
+This will result in a symlink like:
+
+   wr_root/model_tests/test-sshd-service/etc/systemd/system/sshd.service
+   -> /absolute_path_to/wr_root/model_tests/test-sshd-service/lib/systemd/system/ssh.service
 
 See the actual L<Ssh and Sshd model tests|https://github.com/dod38fr/config-model-openssh/tree/master/t/model_tests.d>
 
