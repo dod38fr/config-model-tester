@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+4.004 2019-11-10
+
+  Main change:
+  * test setup can now create symlink to actual files.
+
 4.003 2019-05-09
 
   Bug fixes:
