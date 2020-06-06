@@ -22,7 +22,7 @@ use Test::Log::Log4perl;
 use Config::Model::Tester::Setup qw/init_test setup_test_dir/;
 
 Test::Log::Log4perl->ignore_priority("info");
-
+our $VERSION=10;
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
@@ -1086,7 +1086,7 @@ Log levels below "warn" are ignored.
 L<Config::Model> is currently transitioning from traditional "warn" to
 warn logs. To avoid breaking all tests based on this module, the
 warnings are emitted through L<Log::Log4Perl> only when
-c<$::_use_log4perl_to_warn> is set. This hack will be removed once all
+C<$::_use_log4perl_to_warn> is set. This hack will be removed once all
 warnings checks in tests are ported to log4perl checks.
 
 =item *
