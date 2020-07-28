@@ -22,7 +22,6 @@ use Test::Log::Log4perl;
 use Config::Model::Tester::Setup qw/init_test setup_test_dir/;
 
 Test::Log::Log4perl->ignore_priority("info");
-our $VERSION=10;
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
