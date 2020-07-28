@@ -17,11 +17,8 @@ use Test::Exception;
 use Test::File::Contents ;
 use Test::Differences;
 use Test::Memory::Cycle ;
-use Test::Log::Log4perl;
 
 use Config::Model::Tester::Setup qw/init_test setup_test_dir/;
-
-Test::Log::Log4perl->ignore_priority("info");
 
 # use eval so this module does not have a "hard" dependency on Config::Model
 # This way, Config::Model can build-depend on Config::Model::Tester without
@@ -227,7 +224,7 @@ sub apply_fix {
 }
 
 sub dump_tree {
-    my ($test_group, $root, $mode, $no_warnings, $t, $trace) = @_;
+    my ($test_group, $root, $mode, $no_warnings, $t, $test_logs, $trace) = @_;
 
     print "dumping tree ...\n" if $trace;
     my $dump  = '';
@@ -247,16 +244,20 @@ sub dump_tree {
         }
     }
 
-    if ( my $info = $t->{log4perl_dump_warnings} or $::_use_log4perl_to_warn) {
+    if ( $test_logs and (my $info = $t->{log4perl_dump_warnings} or $::_use_log4perl_to_warn)) {
         note("checking logged warning while dumping");
         my $tw = Test::Log::Log4perl->expect( @{$info // [] } );
         $risky->();
     }
-    elsif ( ($no_warnings or (exists $t->{dump_warnings}) and not defined $t->{dump_warnings}) ) {
+    elsif ( not $test_logs or $no_warnings ) {
         local $Config::Model::Value::nowarning = 1;
-        note("dump_warnings parameter is DEPRECATED") if exists $t->{dump_warnings};
         &$risky;
         ok( 1, "Ran dump_tree (no warning check)" );
+    }
+    elsif ( exists $t->{dump_warnings} and not defined $t->{dump_warnings} ) {
+        local $Config::Model::Value::nowarning = 1;
+        &$risky;
+        ok( 1, "Ran dump_tree with DEPRECATED dump_warnings parameter (no warning check)" );
     }
     else {
         note("dump_warnings parameter is DEPRECATED") if $t->{dump_warnings};
@@ -556,7 +557,7 @@ sub load_test_suite_data {
 }
 
 sub run_model_test {
-    my ($test_group, $test_group_conf, $do, $model, $trace, $wr_root) = @_ ;
+    my ($test_group, $test_group_conf, $do, $model, $trace, $wr_root, $test_logs) = @_ ;
 
     my $test_suite_data = load_test_suite_data($model,$test_group, $test_group_conf);
     my $appli_info = $test_suite_data->{appli_info};
@@ -608,20 +609,20 @@ sub run_model_test {
 
         my $root = $inst->config_root;
 
-        check_load_warnings ($root,$t);
+        check_load_warnings ($root,$t) if $test_logs;
 
         run_update($inst,$wr_dir,$t) if $t->{update};
 
         load_instructions ($root,$t->{load},$trace) if $t->{load} ;
 
-        dump_tree ('before fix '.$test_group , $root, 'full', $t->{no_warnings}, $t->{check_before_fix}, $trace)
+        dump_tree ('before fix '.$test_group , $root, 'full', $t->{no_warnings}, $t->{check_before_fix}, $test_logs, $trace)
             if $t->{check_before_fix};
 
         apply_fix($inst) if  $t->{apply_fix};
 
-        dump_tree ($test_group, $root, 'full', $t->{no_warnings}, $t->{full_dump}, $trace) ;
+        dump_tree ($test_group, $root, 'full', $t->{no_warnings}, $t->{full_dump}, $test_logs, $trace) ;
 
-        my $dump = dump_tree ($test_group, $root, 'custom', $t->{no_warnings}, {}, $trace) ;
+        my $dump = dump_tree ($test_group, $root, 'custom', $t->{no_warnings}, {}, $test_logs, $trace) ;
 
         check_data("first", $root, $t->{check}, $t->{no_warnings}) if $t->{check};
 
@@ -642,7 +643,7 @@ sub run_model_test {
 
         load_instructions ($i2_root,$t->{load2},$trace) if $t->{load2} ;
 
-        my $p2_dump = dump_tree("second $test_group", $i2_root, 'custom', $t->{no_warnings},{}, $trace) ;
+        my $p2_dump = dump_tree("second $test_group", $i2_root, 'custom', $t->{no_warnings},{}, $test_logs, $trace) ;
 
         unified_diff;
         eq_or_diff(
@@ -684,6 +685,7 @@ sub create_model_object {
 sub run_tests {
     my ( $test_only_app, $do, $trace, $wr_root );
     my $model;
+    my $test_logs;
     if (@_) {
         my $arg;
         note ("Calling run_tests with argument is deprecated");
@@ -711,7 +713,9 @@ sub run_tests {
         $wr_root = path('wr_root');
     }
     else {
-        ($model, $trace) = init_test();
+        my $opts;
+        ($model, $trace, $opts) = init_test();
+        $test_logs = $opts->{log} ? 0 : 1;
         ( $test_only_app, $do)  = @ARGV;
         # pseudo root where config files are written by config-model
         $wr_root = setup_test_dir();
@@ -724,7 +728,7 @@ sub run_tests {
         next if ( $test_only_app and $test_only_app ne $test_group ) ;
         $model = create_model_object();
         return unless $model;
-        run_model_test($test_group, $test_group_conf, $do, $model, $trace, $wr_root) ;
+        run_model_test($test_group, $test_group_conf, $do, $model, $trace, $wr_root, $test_logs) ;
     }
 
     memory_cycle_ok($model,"test memory cycle") ;
@@ -1081,6 +1085,9 @@ of L<Test::Log::Lo4Perl/expect>. E.g:
 The Log classes are specified in C<cme/Logging>.
 
 Log levels below "warn" are ignored.
+
+Note that log tests are disabled when C<--log> option is used, hence
+all warnings triggered by the tests are shown.
 
 L<Config::Model> is currently transitioning from traditional "warn" to
 warn logs. To avoid breaking all tests based on this module, the

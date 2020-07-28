@@ -38,11 +38,14 @@ sub init_test {
     my $model = Config::Model->new( );
 
     if ($opts{log}) {
-        note("enabling logs");
+        note("enabling logs and disabling test logs");
         $model->initialize_log4perl;
     }
     else {
         Log::Log4perl->easy_init( $ERROR );
+        require Test::Log::Log4perl;
+        Test::Log::Log4perl->import;
+        Test::Log::Log4perl->ignore_priority("info");
     }
 
     ok( $model, "compiled" );
@@ -110,6 +113,8 @@ strack trace when dying.
 C<--log>: When set, L<Log::Log4perl> uses the config from file
 C<~/.log4config-model> or the default config provided by
 L<Config::Model>. By default, only Error level and above are shown.
+Note that log tests are disabled when this option is set, so you may see a lot of
+harmless Warning messages during tests (which depend on the tests to be run).
 Experimental.
 
 =back
