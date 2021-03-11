@@ -1108,11 +1108,11 @@ Use an empty array_ref to mask load warnings.
 
 Optionally run L<update|App::Cme::Command::update> command:
 
-    update => {
-         [ returns => 'foo' , ]
-         no_warnings => [ 0 | 1 ], # default 0
-         quiet => [ 0 | 1], # default 0, passed to update method
-         loag4perl_update_warnings => [ ... ] # Test::Log::Log4Perl::expect arguments
+ update => {
+    returns => 'foo' , # optional
+    no_warnings => [ 0 | 1 ], # default 0
+    quiet => [ 0 | 1], # default 0, passed to update method
+    loag4perl_update_warnings => [ ... ] # Test::Log::Log4Perl::expect arguments
  }
 
 Where:
@@ -1125,7 +1125,7 @@ C<returns> is the expected return value (optional).
 
 =item *
 
-C<no_warnings> to suppress the warnings coming from
+C<no_warnings> can be used to suppress the warnings coming from
 L<Config::Model::Value>. Note that C<< no_warnings => 1 >> may be
 useful for less verbose test.
 
@@ -1143,8 +1143,8 @@ details.
 =item *
 
 DEPRECATED. C<update_warnings> is an array ref of quoted regexp (See qr operator)
-to check the warnings produced during update. use C<< update => [] >>
-to check that no warnings are issued during update.
+to check the warnings produced during update. Please use C<log4perl_update_warnings>
+instead.
 
 =back
 
