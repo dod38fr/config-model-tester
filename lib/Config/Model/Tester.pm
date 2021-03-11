@@ -1166,7 +1166,7 @@ warning messages:
 
    check_before_fix => {
       dump_errors   => [ ... ] # optional, see below
-      load4perl_dump_warnings => [ ... ] # optional, see below
+      log4perl_dump_warnings => [ ... ] # optional, see below
    }
 
 Use C<dump_errors> if you expect issues:
