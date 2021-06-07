@@ -1201,7 +1201,13 @@ Optionally, call L<apply_fixes|Config::Model::Instance/apply_fixes>:
 Call L<dump_tree|Config::Model::Node/dump_tree> to check the validity of the
 data after optional C<apply_fix>. This step is not optional.
 
-As with C<check_before_fix>, both C<dump_errors> or C<dump_warnings> can be used.
+As with C<check_before_fix>, both C<dump_errors> or
+C<log4perl_dump_warnings> can be specified in C<full_dump> parameter:
+
+ full_dump => {
+     log4perl_dump_warnings => [ ... ], # optional
+     dump_errors            => [ ... ], # optional
+ }
 
 =item *
 
