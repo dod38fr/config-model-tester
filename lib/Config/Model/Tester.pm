@@ -1074,7 +1074,7 @@ C<< load_check => 'no' >> if your file is not valid.
 =item *
 
 Check for config data warnings. You should pass the list of expected warnings that are
-emitted through L<Log::Log4Perl>. The array ref is passed as is to the C<expect> function
+emitted through L<Log::Log4perl>. The array ref is passed as is to the C<expect> function
 of L<Test::Log::Lo4Perl/expect>. E.g:
 
     log4perl_load_warnings => [
@@ -1091,7 +1091,7 @@ all warnings triggered by the tests are shown.
 
 L<Config::Model> is currently transitioning from traditional "warn" to
 warn logs. To avoid breaking all tests based on this module, the
-warnings are emitted through L<Log::Log4Perl> only when
+warnings are emitted through L<Log::Log4perl> only when
 C<$::_use_log4perl_to_warn> is set. This hack will be removed once all
 warnings checks in tests are ported to log4perl checks.
 
@@ -1112,7 +1112,7 @@ Optionally run L<update|App::Cme::Command::update> command:
     returns => 'foo' , # optional
     no_warnings => [ 0 | 1 ], # default 0
     quiet => [ 0 | 1], # default 0, passed to update method
-    loag4perl_update_warnings => [ ... ] # Test::Log::Log4Perl::expect arguments
+    load4perl_update_warnings => [ ... ] # Test::Log::Log4perl::expect arguments
  }
 
 Where:
@@ -1137,7 +1137,7 @@ C<quiet> to suppress progress messages during update.
 
 C<log4perl_update_warnings> is used to check the warnings produced
 during update. The argument is passed to C<expect> function of
-L<Test::Log::Log4Perl>. See C<load_warnings> parameter above for more
+L<Test::Log::Log4perl>. See C<load_warnings> parameter above for more
 details.
 
 =item *
@@ -1186,7 +1186,7 @@ Likewise, specify any expected warnings:
   }
 
 C<log4perl_dump_warnings> passes the array ref content to C<expect>
-function of L<Test::Log::Log4Perl>.
+function of L<Test::Log::Log4perl>.
 
 Both C<log4perl_dump_warnings> and C<dump_errors> can be specified in C<check_before_fix> hash.
 
