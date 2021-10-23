@@ -1448,11 +1448,11 @@ and the L<test specification|https://github.com/dod38fr/config-model-lcdproc/blo
 =item *
 
 Dpkg packages are constructed from several files. These files are handled like
-configuration files by L<Config::Model::Dpkg>. The
-L<test layout|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=tree;f=t/model_tests.d;hb=HEAD>
+configuration files by L<Config::Model::Dpkg|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl>. The
+L<test layout|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/tree/master/t/model_tests.d>
 features test with multiple file in
-L<dpkg-examples|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=tree;f=t/model_tests.d/dpkg-examples;hb=HEAD>.
-The test is specified in L<dpkg-test-conf.pl|http://anonscm.debian.org/gitweb/?p=pkg-perl/packages/libconfig-model-dpkg-perl.git;a=blob_plain;f=t/model_tests.d/dpkg-test-conf.pl;hb=HEAD>
+L<dpkg-examples|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/tree/master/t/model_tests.d/dpkg-examples>.
+The test is specified in L<https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/blob/master/t/model_tests.d/dpkg-test-conf.pl>
 
 =item *
 
