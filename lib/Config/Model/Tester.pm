@@ -1064,7 +1064,7 @@ C<< <model-to-test>-test-conf.pl >>:
 
 Setup test in C<< wr_root/model_tests/<subtest name>/ >>. If your configuration file layout depend
 on the target system, you will have to specify the path using C<setup> parameter.
-See L</"Test file layout depending on system">.
+See L</"More complex file layout">.
 
 =item *
 
