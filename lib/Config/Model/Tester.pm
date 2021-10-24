@@ -849,11 +849,7 @@ on the system (e.g. the OS). For instance, system wide C<ssh_config>
 is stored in C</etc/ssh> on Linux, and directly in C</etc> on MacOS.
 
 These files are copied in a test directory using a C<setup> parameter
-in test case specification:
-
-  setup => {
-    test_file_in_example_dir => 'destination'
-  }
+in test case specification.
 
 Let's consider this example of 2 tests cases for ssh:
 
