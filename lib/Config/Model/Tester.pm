@@ -61,8 +61,9 @@ sub setup_test {
     $conf_file = $wr_dir->child($conf_dir,$conf_file_name)
         if $conf_dir and $conf_file_name;
 
-    my $ex_dir = path('t')->child('model_tests.d', "$test_group-examples");
-    my $ex_data = $ex_dir->child($t_data->{data_from} // $t_name);
+    my $ex_dir = $t_data->{data_from_group} // $test_group;
+    my $ex_path = path('t')->child('model_tests.d', "$ex_dir-examples");
+    my $ex_data = $ex_path->child($t_data->{data_from} // $t_name);
 
     my @file_list;
 
@@ -1047,6 +1048,16 @@ parameter. For instance:
 See
 L<plainfile backend test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/backend-plainfile-test-conf.pl>
 for a real life example.
+
+Likewise, it may be useful to re-use test data from another group of
+test. Lets see this example from C<systemd-service-test-conf.pl>:
+
+    {
+        name => 'transmission',
+        data_from_group => 'systemd', # i.e from ../systemd-examples
+    }
+
+C<data_from> and C<data_from_group> can be together.
 
 =head2 Test scenario
 
