@@ -52,8 +52,8 @@ sub setup_test {
         $test_suite_data->{conf_dir} = $conf_dir;
     }
 
-    my $wr_dir    = $wr_root->child('test-' . $t_name);
-    my $wr_dir2   = $wr_root->child('test-' . $t_name.'-w');
+    my $wr_dir    = $wr_root->child($test_group)->child('test-' . $t_name);
+    my $wr_dir2   = $wr_root->child($test_group)->child('test-' . $t_name.'-w');
     $wr_dir->mkpath;
     $wr_dir2->mkpath;
 
