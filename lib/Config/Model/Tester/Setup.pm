@@ -117,6 +117,12 @@ Note that log tests are disabled when this option is set, so you may see a lot o
 harmless Warning messages during tests (which depend on the tests to be run).
 Experimental.
 
+=item *
+
+C<--trace>: the value of this option is given back to the caller of
+C<init_test>. Usually, this value is used to show more information
+regarding the tests being run.
+
 =back
 
 More options can be passed to C<init_test> using option definitions
