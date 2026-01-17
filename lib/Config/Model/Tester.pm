@@ -184,20 +184,32 @@ sub run_update {
 
     local $Config::Model::Value::nowarning = $args{no_warnings} || $t->{no_warnings} || 0;
 
+    my @note_data ;
+    foreach my $key (keys %args) {
+        my $v = $args{$key};
+        if (ref $v eq "ARRAY") {
+            push @note_data, "$key: @$v" if @$v > 0;
+        }
+        else {
+            push @note_data, "$key: $v";
+        }
+    }
+    my $note = join(", ", @note_data);
+
     my $res ;
     if ( my $info = $t->{log4perl_update_warnings}) {
         my $tw = Test::Log::Log4perl->expect( $info );
-        note("updating config with log4perl warning check and args: ". join(' ',%args));
+        note("updating config with log4perl warning check and args: $note");
         $res = $inst->update( from_dir => $dir, %args ) ;
     }
     elsif (my $uw = delete $args{update_warnings}) {
         note("update_warnings param is DEPRECATED. Please use log4perl_update_warnings");
-        note("updating config with warning check and args: ". join(' ',%args));
+        note("updating config with warning check and args: $note");
         warnings_like { $res = $inst->update( from_dir => $dir, %args ); } $uw,
             "Updated configuration with warning check ";
     }
     else {
-        note("updating config with no warning check and args: ". join(' ',%args));
+        note("updating config with no warning check and args: $note");
         $res = $inst->update( from_dir => $dir, %args ) ;
     }
 
