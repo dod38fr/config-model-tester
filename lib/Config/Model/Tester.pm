@@ -1018,7 +1018,7 @@ test must be specified in a global test parameter:
 
 =head2 Test specification with arbitrary file names
 
-In some models, like C<Multistrap>, the config file is chosen by the
+In some models, like late C<Multistrap>, the config file is chosen by the
 user. In this case, the file name must be specified for each tests
 case:
 
@@ -1029,8 +1029,6 @@ case:
        check       => {},
     }]
  };
-
-See the actual L<multistrap test|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>.
 
 =head2 Backend argument
 
@@ -1472,13 +1470,6 @@ L<test layout|https://salsa.debian.org/perl-team/modules/packages/libconfig-mode
 features test with multiple file in
 L<dpkg-examples|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/tree/master/t/model_tests.d/dpkg-examples>.
 The test is specified in L<https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/blob/master/t/model_tests.d/dpkg-test-conf.pl>
-
-=item *
-
-L<multistrap-test-conf.pl|https://github.com/dod38fr/config-model/blob/master/t/model_tests.d/multistrap-test-conf.pl>
-and L<multistrap-examples|https://github.com/dod38fr/config-model/tree/master/t/model_tests.d/multistrap-examples>
-specify a test where the configuration file name is not imposed by the
-application. The file name must then be set in the test specification.
 
 =item *
 
