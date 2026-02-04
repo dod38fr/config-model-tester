@@ -1468,8 +1468,8 @@ Dpkg packages are constructed from several files. These files are handled like
 configuration files by L<Config::Model::Dpkg|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl>. The
 L<test layout|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/tree/master/t/model_tests.d>
 features test with multiple file in
-L<dpkg-examples|https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/tree/master/t/model_tests.d/dpkg-examples>.
-The test is specified in L<https://salsa.debian.org/perl-team/modules/packages/libconfig-model-dpkg-perl/-/blob/master/t/model_tests.d/dpkg-test-conf.pl>
+L<dpkg-examples|https://deb.li/F8cx>.
+The test is specified in L<https://deb.li/3fx4E>.
 
 =item *
 
