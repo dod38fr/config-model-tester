@@ -6,6 +6,7 @@ use strict;
 use locale;
 use utf8;
 use 5.10.1;
+use Carp;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
@@ -64,7 +65,8 @@ sub setup_test_dir {
     $wr_root->remove_tree;
     $wr_root->mkpath;
 
-    # TODO: remove stringify once Config::Model::Instance can handle Path::Tiny
+    # TODO: remove stringify in 2027
+    carp("setup_test_dir: stringify option is deprecated") if $args{stringify};
     return $args{stringify} ? $wr_root->stringify.'/' : $wr_root;
 }
 
@@ -147,8 +149,7 @@ Cleanup and create a test directory in
 C<wr_root/test-script-name>. For instance this function creates
 directory C<wr_root/foo> for test C<t/foo.t>
 
-Returns a L<Path::Tiny> object of the test directory or a string if
-C<setup_test_dir> is called with C<< stringify => 1 >>.
+Returns a L<Path::Tiny> object of the test directory.
 
 =head1 SEE ALSO
 
