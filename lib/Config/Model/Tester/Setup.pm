@@ -5,8 +5,10 @@ use warnings;
 use strict;
 use locale;
 use utf8;
-use 5.10.1;
+use v5.20;
 use Carp;
+
+use feature qw/postderef signatures/;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
@@ -23,11 +25,14 @@ eval {
 
 require Exporter;
 our @ISA = qw(Exporter);
+
+# this is used for tests
+## no critic (Modules::ProhibitAutomaticExportation)
 our @EXPORT = qw(init_test setup_test_dir);
 
-sub init_test {
+sub init_test (@args) {
     my @option_specs = qw/trace error log/;
-    push @option_specs, @_;
+    push @option_specs, @args;
 
     GetOptions( \my %opts,  @option_specs)
         || die "Unknown option. Expected options are '--".join("', '--",@option_specs)."'\n";

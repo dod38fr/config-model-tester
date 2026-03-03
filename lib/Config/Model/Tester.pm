@@ -5,7 +5,9 @@ use warnings;
 use strict;
 use locale;
 use utf8;
-use 5.12.0;
+use v5.20;
+
+use feature qw/postderef signatures/;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
@@ -30,6 +32,7 @@ eval {
     require Config::Model::BackendMgr;
 } ;
 
+## no critic (Modules::ProhibitAutomaticExportation)
 use vars qw/@ISA @EXPORT/;
 
 require Exporter;
@@ -155,6 +158,7 @@ sub write_config_file {
         $file .= $t->{config_file} ;
         $wr_dir->child($file)->parent->mkpath({mode => oct(755)} ) ;
     }
+    return;
 }
 
 sub check_load_warnings {
@@ -174,6 +178,7 @@ sub check_load_warnings {
         warnings_like { $root->init; } $t->{load_warnings},
             "Read configuration and created instance with init() method with warning check ";
     }
+    return;
 }
 
 sub run_update {
@@ -219,6 +224,7 @@ sub run_update {
     else {
         ok(1,"dumped configuration");
     }
+    return;
 }
 
 sub load_instructions {
@@ -227,6 +233,7 @@ sub load_instructions {
     print "Loading $steps\n" if $trace ;
     $root->load( $steps );
     ok( 1, "load called" );
+    return;
 }
 
 sub apply_fix {
@@ -234,6 +241,7 @@ sub apply_fix {
     local $Config::Model::Value::nowarning = 1;
     $inst->apply_fixes;
     ok( 1, "apply_fixes called" );
+    return;
 }
 
 sub dump_tree {
@@ -294,6 +302,7 @@ sub check_data {
         my $v          = shift @checks;
         check_one_item($label, $root,$path, $v);
     }
+    return;
 }
 
 sub check_one_item {
@@ -318,6 +327,7 @@ sub check_one_item {
             }
         }
     }
+    return;
 }
 
 sub check_annotation {
@@ -328,18 +338,21 @@ sub check_annotation {
         my $note = $annot_check->{$path};
         is( $root->grab($path)->annotation, $note, "check $path annotation" );
     }
+    return;
 }
 
 sub has_key {
     my ($root, $c, $nw) = @_;
 
     _test_key($root, $c, $nw, 0);
+    return;
 }
 
 sub has_not_key {
     my ($root, $c, $nw) = @_;
 
     _test_key($root, $c, $nw, 1);
+    return;
 }
 
 sub _test_key {
@@ -374,6 +387,7 @@ sub _test_key {
             }
         }
     }
+    return;
 }
 
 sub write_data_back {
@@ -381,6 +395,7 @@ sub write_data_back {
     local $Config::Model::Value::nowarning = $t->{no_warnings} || 0;
     $inst->write_back( force => 1 );
     ok( 1, "$test_group write back done" );
+    return;
 }
 
 sub check_file_mode {
@@ -402,6 +417,7 @@ sub check_file_mode {
             }
         }
     }
+    return;
 }
 
 sub check_file_content {
@@ -439,6 +455,7 @@ sub check_file_content {
             }
         }
     }
+    return;
 }
 
 sub check_added_or_removed_files {
@@ -452,6 +469,7 @@ sub check_added_or_removed_files {
     my @new_file_list = list_test_files($destination_dir) ;
     $t->{file_check_sub}->( \@file_list ) if defined $t->{file_check_sub};
     eq_or_diff( \@new_file_list, [ sort @file_list ], "check added or removed files" );
+    return;
 }
 
 sub create_second_instance {
@@ -492,6 +510,7 @@ sub create_test_class {
         my @parms = ref($c) eq 'HASH' ? %$c : @$c;
         $model->create_config_class(@parms);
     }
+    return;
 }
 
 our ($model, $conf_file_name, $conf_dir, $model_to_test, $app_to_test, $home_for_test, @tests, $skip);
@@ -677,11 +696,13 @@ sub run_model_test {
     }
     note("End of $test_group test");
 
+    return;
 }
 
 sub translate_test_data {
     my $t = shift;
     map {$t->{full_dump}{$_} = delete $t->{$_} if $t->{$_}; } qw/dump_warnings dump_errors/;
+    return;
 }
 
 sub create_model_object {
@@ -695,14 +716,14 @@ sub create_model_object {
     return $new_model;
 }
 
-sub run_tests {
+sub run_tests (@args) {
     my ( $test_only_app, $do, $trace, $wr_root );
     my $model;
     my $test_logs;
-    if (@_) {
+    if (@args) {
         my $arg;
         note ("Calling run_tests with argument is deprecated");
-        ( $arg, $test_only_app, $do ) = @_;
+        ( $arg, $test_only_app, $do ) = @args;
 
         my $log = 0;
 
@@ -748,7 +769,9 @@ sub run_tests {
 
     done_testing;
 
+    return;
 }
+
 1;
 
 =head1 SYNOPSIS
