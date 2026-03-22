@@ -8,6 +8,7 @@ use utf8;
 use v5.20;
 
 use feature qw/postderef signatures/;
+no warnings qw/experimental::postderef experimental::signatures/;
 
 use Test::More;
 use Log::Log4perl 1.11 qw(:easy :levels);
